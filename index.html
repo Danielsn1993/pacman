@@ -5,7 +5,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=no">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <title>PACMAN</title>
+  <title>Pacman - Game</title>
   <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Permanent+Marker">
   <style>
     html, body {
@@ -216,6 +216,9 @@
     .btn-ranking:hover { background-color: #3367d6; }
     .btn-logout { background-color: #ff5252; }
     .btn-logout:hover { background-color: #ff0000; }
+    .btn-reset { background-color: #ff9800; }
+    .btn-reset:hover { background-color: #e68900; }
+    #message.success { color: green; }
 
     /* Loading overlay */
     #loadingOverlay {
@@ -268,26 +271,46 @@
         </div>
         <button class="btn" id="loginBtn">Entrar</button>
         <div class="switch-form">
-          <a href="#" id="showRegister">Não tem uma conta? Registre-se</a>
+          <a href="#" id="showRegister">Não tem uma conta? Registre-se</a><br>
+          <a href="#" id="showReset" style="color:#ff9800;">Esqueci minha senha</a>
         </div>
       </div>
 
       <div id="registerForm" style="display:none;">
         <div class="form-group">
-          <label for="newUsername">Nome de Usuário:</label>
-          <input type="text" id="newUsername" name="newUsername" required>
+          <label for="newUsername">Nome de Usuário: <small style="color:#888;">(máx. 20 caracteres)</small></label>
+          <input type="text" id="newUsername" name="newUsername" maxlength="20" required>
         </div>
         <div class="form-group">
-          <label for="newPassword">Senha:</label>
-          <input type="password" id="newPassword" name="newPassword" required>
+          <label for="newPassword">Senha: <small style="color:#888;">(6 a 20 caracteres)</small></label>
+          <input type="password" id="newPassword" name="newPassword" minlength="6" maxlength="20" required>
         </div>
         <div class="form-group">
           <label for="confirmPassword">Confirmar Senha:</label>
-          <input type="password" id="confirmPassword" name="confirmPassword" required>
+          <input type="password" id="confirmPassword" name="confirmPassword" maxlength="20" required>
         </div>
         <button class="btn" id="registerBtn">Registrar</button>
         <div class="switch-form">
           <a href="#" id="showLogin">Já tem uma conta? Faça login</a>
+        </div>
+      </div>
+
+      <div id="resetForm" style="display:none;">
+        <div class="form-group">
+          <label for="resetUsername">Nome de Usuário:</label>
+          <input type="text" id="resetUsername" name="resetUsername" maxlength="20" required>
+        </div>
+        <div class="form-group">
+          <label for="resetNewPassword">Nova Senha: <small style="color:#888;">(6 a 20 caracteres)</small></label>
+          <input type="password" id="resetNewPassword" name="resetNewPassword" minlength="6" maxlength="20" required>
+        </div>
+        <div class="form-group">
+          <label for="resetConfirmPassword">Confirmar Nova Senha:</label>
+          <input type="password" id="resetConfirmPassword" name="resetConfirmPassword" maxlength="20" required>
+        </div>
+        <button class="btn btn-reset" id="resetBtn">Redefinir Senha</button>
+        <div class="switch-form">
+          <a href="#" id="showLoginFromReset">Voltar ao login</a>
         </div>
       </div>
 
@@ -355,7 +378,8 @@
 // ============================================================
 // CONFIGURAÇÃO - substitua pela URL do seu Web App publicado
 // ============================================================
-const APP_URL = 'https://script.google.com/macros/s/AKfycbyNYuZGpQ8qtSaaKL-Lr3cdCn9UYm2G3gqOAbLLBOlflX83E_iUowpSyMyaTyKQwIWf/exec'; 
+const APP_URL = 'COLE_AQUI_A_URL_DO_SEU_WEB_APP'; 
+// Exemplo: 'https://script.google.com/macros/s/AKfy.../exec'
 
 // ============================================================
 // ESTADO GLOBAL (sessão via localStorage, sem servidor)
@@ -425,32 +449,58 @@ function showPage(pageId) {
   }
 }
 
-// ============================================================
-// LOGIN / REGISTRO
-// ============================================================
-document.getElementById('showRegister').addEventListener('click', e => {
-  e.preventDefault();
-  document.getElementById('loginForm').style.display = 'none';
-  document.getElementById('registerForm').style.display = 'block';
-  document.getElementById('message').textContent = '';
-});
+function setMessage(text, isSuccess) {
+  const el = document.getElementById('message');
+  el.textContent = text;
+  el.className = isSuccess ? 'success' : '';
+}
 
-document.getElementById('showLogin').addEventListener('click', e => {
-  e.preventDefault();
+function showLoginForm() {
   document.getElementById('loginForm').style.display = 'block';
   document.getElementById('registerForm').style.display = 'none';
-  document.getElementById('message').textContent = '';
-});
+  document.getElementById('resetForm').style.display = 'none';
+  setMessage('');
+}
+
+function showRegisterForm() {
+  document.getElementById('loginForm').style.display = 'none';
+  document.getElementById('registerForm').style.display = 'block';
+  document.getElementById('resetForm').style.display = 'none';
+  setMessage('');
+}
+
+function showResetForm() {
+  document.getElementById('loginForm').style.display = 'none';
+  document.getElementById('registerForm').style.display = 'none';
+  document.getElementById('resetForm').style.display = 'block';
+  setMessage('');
+}
+
+// ============================================================
+// LOGIN / REGISTRO / RESET
+// ============================================================
+document.getElementById('showRegister').addEventListener('click', e => { e.preventDefault(); showRegisterForm(); });
+document.getElementById('showLogin').addEventListener('click', e => { e.preventDefault(); showLoginForm(); });
+document.getElementById('showReset').addEventListener('click', e => { e.preventDefault(); showResetForm(); });
+document.getElementById('showLoginFromReset').addEventListener('click', e => { e.preventDefault(); showLoginForm(); });
 
 document.getElementById('loginBtn').addEventListener('click', async () => {
   const username = document.getElementById('username').value.trim();
   const password = document.getElementById('password').value;
   if (!username || !password) {
-    document.getElementById('message').textContent = 'Por favor, preencha todos os campos';
+    setMessage('Por favor, preencha todos os campos');
     return;
   }
   if (username.length > 20) {
-    document.getElementById('message').textContent = 'Nome de usuário deve ter no máximo 20 caracteres';
+    setMessage('Nome de usuário deve ter no máximo 20 caracteres');
+    return;
+  }
+  if (password.length < 6) {
+    setMessage('A senha deve ter no mínimo 6 caracteres');
+    return;
+  }
+  if (password.length > 20) {
+    setMessage('A senha deve ter no máximo 20 caracteres');
     return;
   }
   showLoading('Entrando...');
@@ -461,10 +511,10 @@ document.getElementById('loginBtn').addEventListener('click', async () => {
       localStorage.setItem('pacman_user', currentUser);
       showPage('gamePage');
     } else {
-      document.getElementById('message').textContent = result ? result.message : 'Falha no login';
+      setMessage(result ? result.message : 'Falha no login');
     }
   } catch (err) {
-    document.getElementById('message').textContent = 'Erro de conexão: ' + err.message;
+    setMessage('Erro de conexão: ' + err.message);
   } finally {
     hideLoading();
   }
@@ -475,33 +525,72 @@ document.getElementById('registerBtn').addEventListener('click', async () => {
   const password = document.getElementById('newPassword').value;
   const confirmPassword = document.getElementById('confirmPassword').value;
   if (!username || !password || !confirmPassword) {
-    document.getElementById('message').textContent = 'Por favor, preencha todos os campos';
-    return;
-  }
-  if (password !== confirmPassword) {
-    document.getElementById('message').textContent = 'As senhas não coincidem';
+    setMessage('Por favor, preencha todos os campos');
     return;
   }
   if (username.length > 20) {
-    document.getElementById('message').textContent = 'Nome de usuário deve ter no máximo 20 caracteres';
+    setMessage('Nome de usuário deve ter no máximo 20 caracteres');
+    return;
+  }
+  if (password.length < 6) {
+    setMessage('A senha deve ter no mínimo 6 caracteres');
+    return;
+  }
+  if (password.length > 20) {
+    setMessage('A senha deve ter no máximo 20 caracteres');
+    return;
+  }
+  if (password !== confirmPassword) {
+    setMessage('As senhas não coincidem');
     return;
   }
   showLoading('Registrando...');
   try {
     const result = await apiPost({ action: 'registerUser', username, password });
-    document.getElementById('message').textContent = result.message;
-    if (result.success) {
-      document.getElementById('loginForm').style.display = 'block';
-      document.getElementById('registerForm').style.display = 'none';
-    }
+    setMessage(result.message, result.success);
+    if (result.success) showLoginForm();
   } catch (err) {
-    document.getElementById('message').textContent = 'Erro de conexão: ' + err.message;
+    setMessage('Erro de conexão: ' + err.message);
   } finally {
     hideLoading();
   }
 });
 
-// Enter nos campos de login
+document.getElementById('resetBtn').addEventListener('click', async () => {
+  const username = document.getElementById('resetUsername').value.trim();
+  const newPassword = document.getElementById('resetNewPassword').value;
+  const confirmPassword = document.getElementById('resetConfirmPassword').value;
+  if (!username || !newPassword || !confirmPassword) {
+    setMessage('Por favor, preencha todos os campos');
+    return;
+  }
+  if (newPassword.length < 6) {
+    setMessage('A nova senha deve ter no mínimo 6 caracteres');
+    return;
+  }
+  if (newPassword.length > 20) {
+    setMessage('A nova senha deve ter no máximo 20 caracteres');
+    return;
+  }
+  if (newPassword !== confirmPassword) {
+    setMessage('As senhas não coincidem');
+    return;
+  }
+  showLoading('Redefinindo senha...');
+  try {
+    const result = await apiPost({ action: 'resetPassword', username, newPassword });
+    setMessage(result.message, result.success);
+    if (result.success) {
+      setTimeout(() => showLoginForm(), 1500);
+    }
+  } catch (err) {
+    setMessage('Erro de conexão: ' + err.message);
+  } finally {
+    hideLoading();
+  }
+});
+
+// Enter nos campos
 ['username','password'].forEach(id => {
   document.getElementById(id).addEventListener('keypress', e => {
     if (e.key === 'Enter') document.getElementById('loginBtn').click();
@@ -510,6 +599,11 @@ document.getElementById('registerBtn').addEventListener('click', async () => {
 ['newUsername','newPassword','confirmPassword'].forEach(id => {
   document.getElementById(id).addEventListener('keypress', e => {
     if (e.key === 'Enter') document.getElementById('registerBtn').click();
+  });
+});
+['resetUsername','resetNewPassword','resetConfirmPassword'].forEach(id => {
+  document.getElementById(id).addEventListener('keypress', e => {
+    if (e.key === 'Enter') document.getElementById('resetBtn').click();
   });
 });
 
