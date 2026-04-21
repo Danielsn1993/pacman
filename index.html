@@ -189,14 +189,14 @@
       padding: 20px;
     }
 
-    .ranking-table { width: 100%; border-collapse: collapse; }
-    .ranking-table th, .ranking-table td { padding: 12px 15px; text-align: center; border-bottom: 1px solid #ddd; }
-    .ranking-table th { background-color: #f8f8f8; font-weight: bold; }
+    .ranking-table { width: 100%; border-collapse: collapse; font-size: 21px; }
+    .ranking-table th, .ranking-table td { padding: 18px 20px; text-align: center; border-bottom: 1px solid #ddd; font-size: 21px; }
+    .ranking-table th { background-color: #f8f8f8; font-weight: bold; font-size: 21px; }
     .gold-medal { background-color: rgba(255,200,0,0.3); }
     .silver-medal { background-color: rgba(192,192,192,0.3); }
     .bronze-medal { background-color: rgba(205,127,50,0.3); }
     .highlight { color: #008000 !important; font-weight: bold !important; }
-    .user-position { margin-top: 20px; padding: 15px; background-color: #e8f5e9; border-radius: 5px; border-left: 5px solid #4caf50; }
+    .user-position { margin-top: 20px; padding: 15px; background-color: #e8f5e9; border-radius: 5px; border-left: 5px solid #4caf50; font-size: 21px; }
 
     .back-btn { position: fixed; top: 10px; right: 10px; z-index: 1002; background-color: #ff5252; }
     .back-btn:hover { background-color: #ff0000; }
@@ -349,7 +349,7 @@
       <h1>Pacman - Ranking</h1>
     </div>
     <div class="ranking-container">
-      <h2 style="text-align:center;">🏆 OS 10 MELHORES JOGADORES 🏆</h2>
+      <h2 style="text-align:center;font-size:28px;">🏆 OS 10 MELHORES JOGADORES 🏆</h2>
       <table class="ranking-table">
         <thead>
           <tr><th>Posição</th><th>Jogador</th><th>Pontuação</th></tr>
@@ -678,64 +678,64 @@ function handleLogout() {
 // ============================================================
 async function loadRankingData() {
   const rankingBody = document.getElementById('rankingBody');
+  const userPosition = document.getElementById('userPosition');
+  const userRankInfoEl = document.getElementById('userRankInfo');
   rankingBody.innerHTML = '<tr><td colspan="3" style="text-align:center;">Carregando ranking...</td></tr>';
+  userPosition.style.display = 'none';
 
   try {
-    const scores = await apiFetch({ action: 'getTopScores' });
-    const list = scores.scores || scores; // compatível com ambos os formatos
+    // Busca ranking e posição do usuário simultaneamente — igual ao Revisão Daniel
+    const [scoresData, rankInfo] = await Promise.all([
+      apiFetch({ action: 'getTopScores' }),
+      apiFetch({ action: 'getUserRank', username: currentUser })
+    ]);
+
+    const list = scoresData.scores || scoresData;
     rankingBody.innerHTML = '';
 
     if (!list || list.length === 0) {
       rankingBody.innerHTML = '<tr><td colspan="3" style="text-align:center;">Nenhuma pontuação registrada ainda</td></tr>';
-      return;
+    } else {
+      list.forEach((score, index) => {
+        const row = document.createElement('tr');
+
+        const positionCell = document.createElement('td');
+        positionCell.style.position = 'relative';
+        positionCell.style.textAlign = 'center';
+        positionCell.innerText = index + 1;
+
+        if (index < 3) {
+          const medals = ['🥇','🥈','🥉'];
+          const medalSpan = document.createElement('span');
+          medalSpan.innerText = medals[index];
+          medalSpan.style.cssText = 'position:absolute;left:35px;top:50%;transform:translateY(-50%)';
+          positionCell.appendChild(medalSpan);
+        }
+
+        const playerCell = document.createElement('td');
+        playerCell.innerText = score[0] || 'Desconhecido';
+
+        const scoreCell = document.createElement('td');
+        scoreCell.innerText = score[1] || 0;
+
+        row.appendChild(positionCell);
+        row.appendChild(playerCell);
+        row.appendChild(scoreCell);
+
+        if (score[0] === currentUser) row.classList.add('highlight');
+        if (index === 0) row.classList.add('gold-medal');
+        else if (index === 1) row.classList.add('silver-medal');
+        else if (index === 2) row.classList.add('bronze-medal');
+
+        rankingBody.appendChild(row);
+      });
     }
 
-    list.forEach((score, index) => {
-      const row = document.createElement('tr');
-
-      const positionCell = document.createElement('td');
-      positionCell.style.position = 'relative';
-      positionCell.style.textAlign = 'center';
-      positionCell.innerText = index + 1;
-
-      if (index < 3) {
-        const medals = ['🥇','🥈','🥉'];
-        const medalSpan = document.createElement('span');
-        medalSpan.innerText = medals[index];
-        medalSpan.style.cssText = 'position:absolute;left:35px;top:50%;transform:translateY(-50%)';
-        positionCell.appendChild(medalSpan);
-      }
-
-      const playerCell = document.createElement('td');
-      playerCell.innerText = score[0] || 'Desconhecido';
-
-      const scoreCell = document.createElement('td');
-      scoreCell.innerText = score[1] || 0;
-
-      row.appendChild(positionCell);
-      row.appendChild(playerCell);
-      row.appendChild(scoreCell);
-
-      if (score[0] === currentUser) row.classList.add('highlight');
-      if (index === 0) row.classList.add('gold-medal');
-      else if (index === 1) row.classList.add('silver-medal');
-      else if (index === 2) row.classList.add('bronze-medal');
-
-      rankingBody.appendChild(row);
-    });
-
-    // Posição do usuário atual
-    try {
-      const rankInfo = await apiFetch({ action: 'getUserRank', username: currentUser });
-      const userPosition = document.getElementById('userPosition');
-      const userRankInfo = document.getElementById('userRankInfo');
-      if (rankInfo && rankInfo.rank !== 'N/A') {
-        userPosition.style.display = 'block';
-        userRankInfo.textContent = rankInfo.rank + ' (Pontuação: ' + rankInfo.score + ')';
-      } else {
-        userPosition.style.display = 'none';
-      }
-    } catch (e) { /* silencioso */ }
+    // Exibe posição do usuário junto com o ranking
+    if (rankInfo && rankInfo.rank !== 'N/A') {
+      userPosition.style.display = 'block';
+      userRankInfoEl.textContent = rankInfo.rank + ' (Pontuação: ' + rankInfo.score + ')';
+    }
 
   } catch (err) {
     rankingBody.innerHTML = '<tr><td colspan="3" style="text-align:center;">Erro ao carregar pontuações: ' + err.message + '</td></tr>';
