@@ -449,6 +449,10 @@ document.getElementById('loginBtn').addEventListener('click', async () => {
     document.getElementById('message').textContent = 'Por favor, preencha todos os campos';
     return;
   }
+  if (username.length > 20) {
+    document.getElementById('message').textContent = 'Nome de usuário deve ter no máximo 20 caracteres';
+    return;
+  }
   showLoading('Entrando...');
   try {
     const result = await apiPost({ action: 'loginUser', username, password });
@@ -476,6 +480,10 @@ document.getElementById('registerBtn').addEventListener('click', async () => {
   }
   if (password !== confirmPassword) {
     document.getElementById('message').textContent = 'As senhas não coincidem';
+    return;
+  }
+  if (username.length > 20) {
+    document.getElementById('message').textContent = 'Nome de usuário deve ter no máximo 20 caracteres';
     return;
   }
   showLoading('Registrando...');
