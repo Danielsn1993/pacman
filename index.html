@@ -708,16 +708,15 @@ async function loadRankingData() {
         const positionCell = document.createElement('td');
         const posDiv = document.createElement('div');
         posDiv.className = 'pos-cell';
-        const numSpan = document.createElement('span');
-        numSpan.className = 'pos-num';
-        numSpan.textContent = index + 1;
-        posDiv.appendChild(numSpan);
+        const mainSpan = document.createElement('span');
         if (index < 3) {
-          const medalSpan = document.createElement('span');
-          medalSpan.className = 'pos-medal';
-          medalSpan.textContent = medals[index];
-          posDiv.appendChild(medalSpan);
+          mainSpan.className = 'pos-medal';
+          mainSpan.textContent = medals[index];
+        } else {
+          mainSpan.className = 'pos-num';
+          mainSpan.textContent = index + 1;
         }
+        posDiv.appendChild(mainSpan);
         positionCell.appendChild(posDiv);
 
         const playerCell = document.createElement('td');
