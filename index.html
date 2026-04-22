@@ -374,7 +374,6 @@
     <div class="header">
       <div class="user-info">
         <div class="username" id="userDisplay">Carregando...</div>
-        <div id="userRank">Rank: Carregando...</div>
       </div>
     </div>
     <h1>Pacman</h1>
@@ -625,8 +624,7 @@ document.getElementById('resetBtn').addEventListener('click', async () => {
 // ============================================================
 async function loadGameData() {
   document.getElementById('userDisplay').textContent = 'Usuário: ' + currentUser;
-  document.getElementById('userRank').textContent = 'Carregando rank...';
-  await loadUserRank(currentUser);
+  document.getElementById('userRank').textContent = '';
 }
 
 async function loadUserRank(username) {
@@ -1150,7 +1148,7 @@ var PACMAN=(function(){
 // ============================================================
 (function(){
   var touchStartX=0,touchStartY=0;
-  var SWIPE_THRESHOLD=30; // pixels mínimos para contar como swipe
+  var SWIPE_THRESHOLD=10; // pixels mínimos para contar como swipe
 
   document.getElementById('gameArea').addEventListener('touchstart',function(e){
     var t=e.touches[0];
