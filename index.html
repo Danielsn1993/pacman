@@ -5,63 +5,157 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=no">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <title>PACMAN</title>
+  <title>Pacman - Game</title>
   <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Permanent+Marker">
   <style>
+    * { box-sizing: border-box; }
+
     html, body {
-      margin: 0;
-      padding: 0;
-      width: 100%;
-      height: 100%;
-      overflow: hidden;
+      margin: 0; padding: 0;
+      width: 100%; height: 100%;
       background-color: black;
+      /* sem overflow:hidden global — cada página cuida do seu */
     }
 
     #app-container {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
       width: 100%;
-      height: 100vh;
+      min-height: 100vh;
     }
 
+    /* ── LOGIN PAGE ── */
     #loginPage {
+      display: none;
       position: fixed;
-      top: 0; left: 0; right: 0; bottom: 0;
-      width: 100%; height: 100%;
+      inset: 0;
       background-color: #f0f0f0;
       z-index: 1000;
+      overflow-y: auto;
     }
 
-    #loginBtn, #registerBtn {
+    .login-container {
+      background-color: white;
+      border-radius: 10px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+      padding: 30px;
+      width: min(90%, 450px);
+      margin: 20px auto;
+      /* não mais position:absolute — flui normalmente no scroll */
+    }
+
+    .form-group { margin-bottom: 15px; }
+    label { display: block; margin-bottom: 5px; font-weight: bold; }
+    input[type="text"], input[type="password"] {
+      width: 100%; padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      box-sizing: border-box;
+      font-size: 16px; /* evita zoom automático no iOS */
+    }
+    .switch-form { text-align: center; margin-top: 20px; line-height: 2; }
+    .switch-form a { color: #4285f4; text-decoration: none; }
+    .switch-form a:hover { text-decoration: underline; }
+    #message { color: red; margin-top: 10px; text-align: center; }
+    #message.success { color: green; }
+
+    #loginBtn, #registerBtn, #resetBtn {
       display: block;
       width: 100%;
       margin: 15px auto;
       text-align: center;
     }
 
+    /* ── MENU PAGE ── */
     #gamePage {
-      position: absolute;
-      top: 50%; left: 50%;
-      transform: translate(-50%, -45%);
-      width: 100%; max-width: 100%;
-      height: 100vh;
-      margin: 0 auto;
+      display: none;
+      width: 100%;
+      min-height: 100vh;
       background-color: black;
-      overflow: auto;
+      overflow-y: auto;
+      text-align: center;
+      padding-bottom: 30px;
+    }
+
+    .header {
+      width: 100%;
+      padding: 20px 5%;
+      box-sizing: border-box;
       text-align: center;
     }
 
+    .user-info { width: 100%; margin-bottom: 10px; text-align: center; }
+    .username, #userRank {
+      margin: 5px 0;
+      font-weight: bold;
+      color: white;
+      font-size: clamp(20px, 3vw, 30px);
+    }
+
+    h1 {
+      font-family: 'Permanent Marker', cursive;
+      text-align: center;
+      color: yellow;
+      margin-top: 10px;
+      font-size: clamp(36px, 8vw, 54px);
+      margin-bottom: 10px;
+    }
+
+    .game-controls { text-align: center; margin: 16px auto; width: 100%; }
+
+    .btn {
+      display: inline-block;
+      background-color: #4285f4;
+      color: white;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 16px;
+      text-align: center;
+      margin: 5px;
+    }
+    .btn:hover { background-color: #3367d6; }
+
+    .btn-large {
+      font-size: clamp(20px, 4vw, 27px);
+      padding: 18px 36px;
+      background-color: #4CAF50;
+      width: min(90%, 400px);
+      display: block;
+      margin: 0 auto;
+    }
+    .btn-large:hover { background-color: #45a049; }
+
+    .secondary-buttons {
+      margin: 16px auto;
+      text-align: center;
+      width: min(90%, 400px);
+    }
+
+    .btn-secondary {
+      width: 100%;
+      font-size: clamp(18px, 3.5vw, 24px);
+      padding: 14px 0;
+      display: block;
+      margin: 12px auto;
+      border-radius: 4px;
+    }
+
+    .btn-ranking { background-color: #4285f4; }
+    .btn-ranking:hover { background-color: #3367d6; }
+    .btn-logout { background-color: #ff5252; }
+    .btn-logout:hover { background-color: #ff0000; }
+    .btn-reset { background-color: #ff9800; }
+    .btn-reset:hover { background-color: #e68900; }
+
+    /* ── GAME AREA ── */
     #gameArea {
       display: none;
-      position: absolute;
-      top: 0; left: 0;
-      width: 100%; height: 100%;
+      position: fixed;
+      inset: 0;
       background-color: black;
       z-index: 1000;
       overflow: hidden;
-      padding: 0; margin: 0;
+      touch-action: none; /* impede scroll durante swipe */
     }
 
     #pacman {
@@ -70,7 +164,7 @@
       transform: translate(-50%, -50%);
       z-index: 1001;
       width: 97vmin;
-      height: calc(97vmin * 22/19 + 1000px);
+      height: calc(97vmin * 22/19 + 120px);
       max-height: 97vh;
       display: flex;
       justify-content: center;
@@ -83,144 +177,101 @@
       max-width: 100%; max-height: 100%;
       object-fit: contain;
       margin: auto;
-    }
-
-    .container { max-width: 800px; margin: 0 auto; padding: 20px; }
-
-    .btn {
-      display: inline-block;
-      background-color: #4285f4;
-      color: white;
-      padding: 10px 20px;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-      font-size: 16px;
-      text-align: center;
-      text-decoration: none;
-      margin: 5px;
-    }
-    .btn:hover { background-color: #3367d6; }
-
-    .login-container {
-      background-color: white;
-      border-radius: 10px;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.2);
-      padding: 30px;
-      width: min(90%, 450px);
-      position: absolute;
-      top: 50%; left: 50%;
-      transform: translate(-50%, -50%);
-    }
-
-    .form-group { margin-bottom: 15px; }
-    label { display: block; margin-bottom: 5px; font-weight: bold; }
-    input[type="text"], input[type="password"] {
-      width: 100%; padding: 10px;
-      border: 1px solid #ddd;
-      border-radius: 4px;
-      box-sizing: border-box;
-    }
-    .switch-form { text-align: center; margin-top: 20px; }
-    .switch-form a { color: #4285f4; text-decoration: none; }
-    .switch-form a:hover { text-decoration: underline; }
-    #message { color: red; margin-top: 10px; text-align: center; }
-
-    .game-controls { position: relative; text-align: center; margin: 22px auto; width: 100%; }
-
-    .btn-large {
-      font-size: 27px;
-      padding: 18px 36px;
-      background-color: #4CAF50;
-      width: fit-content;
-      min-width: 300px;
-      margin: 0 auto;
       display: block;
-    }
-    .btn-large:hover { background-color: #45a049; }
-
-    .header {
-      position: relative;
-      width: 100%;
-      padding: 20px 5%;
-      box-sizing: border-box;
-      background-color: transparent;
-      text-align: center;
-    }
-
-    .user-info { position: relative; width: 100%; margin-bottom: 30px; text-align: center; }
-    .username, #userRank {
-      margin: 5px 0;
-      text-align: center;
-      font-weight: bold;
-      color: white;
-      font-size: clamp(24px, 3vw, 30px);
     }
 
     #shim { font-family: 'Permanent Marker', cursive; position: absolute; visibility: hidden; }
 
-    h1 {
-      font-family: 'Permanent Marker', cursive;
-      text-align: center;
-      color: yellow;
-      margin-top: 20px;
-      font-size: clamp(42px, 6vw, 54px);
-      margin-bottom: 10px;
+    .back-btn {
+      position: fixed;
+      top: 10px; right: 10px;
+      z-index: 1002;
+      background-color: #ff5252;
+      font-size: 14px;
+      padding: 8px 14px;
+    }
+    .back-btn:hover { background-color: #ff0000; }
+
+    /* Indicador de swipe no mobile */
+    #swipeHint {
+      position: fixed;
+      bottom: 16px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 1003;
+      background: rgba(255,255,255,0.15);
+      color: rgba(255,255,255,0.6);
+      font-size: 13px;
+      padding: 6px 16px;
+      border-radius: 20px;
+      pointer-events: none;
+      white-space: nowrap;
     }
 
+    /* ── RANKING PAGE ── */
     #rankingPage {
       display: none;
       position: fixed;
-      top: 0; left: 0;
-      width: 100%; height: 100vh;
+      inset: 0;
       background-color: #f0f0f0;
-      overflow: auto;
+      overflow-y: auto;
       z-index: 1000;
     }
 
-    .ranking-header { background-color: #333; color: white; padding: 20px 0; text-align: center; width: 100%; }
+    .ranking-header {
+      background-color: #333;
+      color: white;
+      padding: 16px 0;
+      text-align: center;
+      width: 100%;
+    }
 
     .ranking-container {
-      max-width: min(90%, 700px);
-      margin: 20px auto;
+      max-width: min(95%, 700px);
+      margin: 16px auto 30px;
       background-color: white;
       border-radius: 10px;
       box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-      padding: 20px;
+      padding: 16px;
     }
 
-    .ranking-table { width: 100%; border-collapse: collapse; font-size: 21px; }
-    .ranking-table th, .ranking-table td { padding: 18px 20px; text-align: center; border-bottom: 1px solid #ddd; font-size: 21px; }
-    .ranking-table th { background-color: #f8f8f8; font-weight: bold; font-size: 21px; }
+    /* Tabela responsiva: scroll horizontal se necessário */
+    .ranking-table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+
+    .ranking-table { width: 100%; border-collapse: collapse; font-size: clamp(15px, 3.5vw, 21px); }
+    .ranking-table th, .ranking-table td {
+      padding: clamp(10px, 2.5vw, 18px) clamp(8px, 2vw, 20px);
+      text-align: center;
+      border-bottom: 1px solid #ddd;
+      font-size: clamp(15px, 3.5vw, 21px);
+    }
+    .ranking-table th { background-color: #f8f8f8; font-weight: bold; }
+
+    /* Coluna de posição: número à esquerda, medalha à direita — sem sobreposição */
+    .pos-cell {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      white-space: nowrap;
+    }
+    .pos-num { font-weight: bold; }
+    .pos-medal { font-size: 1.2em; }
+
     .gold-medal { background-color: rgba(255,200,0,0.3); }
     .silver-medal { background-color: rgba(192,192,192,0.3); }
     .bronze-medal { background-color: rgba(205,127,50,0.3); }
     .highlight { color: #008000 !important; font-weight: bold !important; }
-    .user-position { margin-top: 20px; padding: 15px; background-color: #e8f5e9; border-radius: 5px; border-left: 5px solid #4caf50; font-size: 21px; }
 
-    .back-btn { position: fixed; top: 10px; right: 10px; z-index: 1002; background-color: #ff5252; }
-    .back-btn:hover { background-color: #ff0000; }
-
-    .secondary-buttons { position: relative; margin: 22px auto; text-align: center; width: fit-content; }
-
-    .btn-secondary {
-      width: 100%;
-      min-width: 300px;
-      font-size: 24px;
-      padding: 15px 0;
-      display: block;
-      margin: 15px auto;
+    .user-position {
+      margin-top: 16px; padding: 14px;
+      background-color: #e8f5e9;
+      border-radius: 5px;
+      border-left: 5px solid #4caf50;
+      font-size: clamp(15px, 3.5vw, 21px);
     }
 
-    .btn-ranking { background-color: #4285f4; }
-    .btn-ranking:hover { background-color: #3367d6; }
-    .btn-logout { background-color: #ff5252; }
-    .btn-logout:hover { background-color: #ff0000; }
-    .btn-reset { background-color: #ff9800; }
-    .btn-reset:hover { background-color: #e68900; }
-    #message.success { color: green; }
-
-    /* Loading overlay */
+    /* ── LOADING OVERLAY ── */
     #loadingOverlay {
       display: none;
       position: fixed;
@@ -256,18 +307,18 @@
   </div>
 
   <!-- Página de Login -->
-  <div id="loginPage" style="display:none;">
+  <div id="loginPage">
     <div class="login-container">
-      <h1 style="color:#4285f4;">Pacman Game</h1>
+      <h1 style="color:#4285f4;font-size:clamp(28px,7vw,42px);">Pacman Game</h1>
 
       <div id="loginForm">
         <div class="form-group">
           <label for="username">Nome de Usuário:</label>
-          <input type="text" id="username" name="username" required>
+          <input type="text" id="username" name="username" maxlength="20" autocomplete="username" required>
         </div>
         <div class="form-group">
           <label for="password">Senha:</label>
-          <input type="password" id="password" name="password" required>
+          <input type="password" id="password" name="password" maxlength="20" autocomplete="current-password" required>
         </div>
         <button class="btn" id="loginBtn">Entrar</button>
         <div class="switch-form">
@@ -279,15 +330,15 @@
       <div id="registerForm" style="display:none;">
         <div class="form-group">
           <label for="newUsername">Nome de Usuário: <small style="color:#888;">(máx. 20 caracteres)</small></label>
-          <input type="text" id="newUsername" name="newUsername" maxlength="20" required>
+          <input type="text" id="newUsername" name="newUsername" maxlength="20" autocomplete="username" required>
         </div>
         <div class="form-group">
           <label for="newPassword">Senha: <small style="color:#888;">(6 a 20 caracteres)</small></label>
-          <input type="password" id="newPassword" name="newPassword" minlength="6" maxlength="20" required>
+          <input type="password" id="newPassword" name="newPassword" minlength="6" maxlength="20" autocomplete="new-password" required>
         </div>
         <div class="form-group">
           <label for="confirmPassword">Confirmar Senha:</label>
-          <input type="password" id="confirmPassword" name="confirmPassword" maxlength="20" required>
+          <input type="password" id="confirmPassword" name="confirmPassword" maxlength="20" autocomplete="new-password" required>
         </div>
         <button class="btn" id="registerBtn">Registrar</button>
         <div class="switch-form">
@@ -319,7 +370,7 @@
   </div>
 
   <!-- Menu Principal -->
-  <div id="gamePage" style="display:none;">
+  <div id="gamePage">
     <div class="header">
       <div class="user-info">
         <div class="username" id="userDisplay">Carregando...</div>
@@ -341,27 +392,30 @@
     <div id="shim">shim for font face</div>
     <div id="pacman"></div>
     <button id="backBtn" class="btn back-btn">Voltar</button>
+    <div id="swipeHint">👆 Arraste para mover o Pacman</div>
   </div>
 
   <!-- Página de Ranking -->
   <div id="rankingPage">
     <div class="ranking-header">
-      <h1>Pacman - Ranking</h1>
+      <h1 style="font-size:clamp(28px,6vw,48px);margin:0;padding:10px 0;">Pacman - Ranking</h1>
     </div>
     <div class="ranking-container">
-      <h2 style="text-align:center;font-size:28px;">🏆 OS 10 MELHORES JOGADORES 🏆</h2>
-      <table class="ranking-table">
-        <thead>
-          <tr><th>Posição</th><th>Jogador</th><th>Pontuação</th></tr>
-        </thead>
-        <tbody id="rankingBody">
-          <tr><td colspan="3" style="text-align:center;">Carregando ranking...</td></tr>
-        </tbody>
-      </table>
+      <h2 style="text-align:center;font-size:clamp(16px,4vw,28px);margin-bottom:12px;">🏆 OS 10 MELHORES JOGADORES 🏆</h2>
+      <div class="ranking-table-wrap">
+        <table class="ranking-table">
+          <thead>
+            <tr><th>Posição</th><th>Jogador</th><th>Pontuação</th></tr>
+          </thead>
+          <tbody id="rankingBody">
+            <tr><td colspan="3" style="text-align:center;">Carregando ranking...</td></tr>
+          </tbody>
+        </table>
+      </div>
       <div id="userPosition" class="user-position" style="display:none;">
         Sua posição no ranking: <span id="userRankInfo"></span>
       </div>
-      <div class="secondary-buttons">
+      <div class="secondary-buttons" style="width:100%;">
         <button id="refreshRankingBtn" class="btn btn-secondary btn-ranking">Atualizar Ranking</button>
         <button id="backToGameBtn" class="btn btn-secondary" style="background-color:#4CAF50;">Voltar ao Menu</button>
         <button id="rankingLogoutBtn" class="btn btn-secondary btn-logout">Sair</button>
@@ -376,19 +430,19 @@
 <script>
 
 // ============================================================
-// CONFIGURAÇÃO - substitua pela URL do seu Web App publicado
+// CONFIGURAÇÃO
 // ============================================================
-const APP_URL = 'https://script.google.com/macros/s/AKfycbyNYuZGpQ8qtSaaKL-Lr3cdCn9UYm2G3gqOAbLLBOlflX83E_iUowpSyMyaTyKQwIWf/exec'; 
+const APP_URL = 'COLE_AQUI_A_URL_DO_SEU_WEB_APP';
 
 // ============================================================
-// ESTADO GLOBAL (sessão via localStorage, sem servidor)
+// ESTADO GLOBAL
 // ============================================================
 let currentUser = localStorage.getItem('pacman_user') || null;
 let pacmanGameTimer = null;
 let pacmanInitialized = false;
 
 // ============================================================
-// HELPERS DE FETCH — padrão igual ao Revisão Daniel
+// FETCH HELPERS
 // ============================================================
 async function apiFetch(params) {
   const qs = new URLSearchParams(params).toString();
@@ -406,7 +460,7 @@ async function apiPost(body) {
 }
 
 // ============================================================
-// LOADING OVERLAY
+// LOADING
 // ============================================================
 function showLoading(msg) {
   document.getElementById('loadingMsg').textContent = msg || 'Carregando...';
@@ -419,8 +473,10 @@ function hideLoading() {
 // ============================================================
 // NAVEGAÇÃO
 // ============================================================
+const ALL_PAGES = ['loginPage','gamePage','gameArea','rankingPage'];
+
 function showPage(pageId) {
-  ['loginPage','gamePage','gameArea','rankingPage'].forEach(id => {
+  ALL_PAGES.forEach(id => {
     const el = document.getElementById(id);
     if (el) el.style.display = 'none';
   });
@@ -432,10 +488,7 @@ function showPage(pageId) {
     target.style.display = 'block';
     loadGameData();
   } else if (pageId === 'gameArea') {
-    if (pacmanGameTimer !== null) {
-      window.clearInterval(pacmanGameTimer);
-      pacmanGameTimer = null;
-    }
+    if (pacmanGameTimer !== null) { window.clearInterval(pacmanGameTimer); pacmanGameTimer = null; }
     pacmanInitialized = false;
     target.style.display = 'block';
     initPacman();
@@ -448,6 +501,9 @@ function showPage(pageId) {
   }
 }
 
+// ============================================================
+// MENSAGEM
+// ============================================================
 function setMessage(text, isSuccess) {
   const el = document.getElementById('message');
   el.textContent = text;
@@ -460,14 +516,12 @@ function showLoginForm() {
   document.getElementById('resetForm').style.display = 'none';
   setMessage('');
 }
-
 function showRegisterForm() {
   document.getElementById('loginForm').style.display = 'none';
   document.getElementById('registerForm').style.display = 'block';
   document.getElementById('resetForm').style.display = 'none';
   setMessage('');
 }
-
 function showResetForm() {
   document.getElementById('loginForm').style.display = 'none';
   document.getElementById('registerForm').style.display = 'none';
@@ -483,25 +537,25 @@ document.getElementById('showLogin').addEventListener('click', e => { e.preventD
 document.getElementById('showReset').addEventListener('click', e => { e.preventDefault(); showResetForm(); });
 document.getElementById('showLoginFromReset').addEventListener('click', e => { e.preventDefault(); showLoginForm(); });
 
+function validateUsername(username) {
+  if (!username) return 'Por favor, preencha todos os campos';
+  if (username.length > 20) return 'Nome de usuário deve ter no máximo 20 caracteres';
+  return null;
+}
+function validatePassword(password) {
+  if (!password) return 'Por favor, preencha todos os campos';
+  if (password.length < 6) return 'A senha deve ter no mínimo 6 caracteres';
+  if (password.length > 20) return 'A senha deve ter no máximo 20 caracteres';
+  return null;
+}
+
 document.getElementById('loginBtn').addEventListener('click', async () => {
   const username = document.getElementById('username').value.trim();
   const password = document.getElementById('password').value;
-  if (!username || !password) {
-    setMessage('Por favor, preencha todos os campos');
-    return;
-  }
-  if (username.length > 20) {
-    setMessage('Nome de usuário deve ter no máximo 20 caracteres');
-    return;
-  }
-  if (password.length < 6) {
-    setMessage('A senha deve ter no mínimo 6 caracteres');
-    return;
-  }
-  if (password.length > 20) {
-    setMessage('A senha deve ter no máximo 20 caracteres');
-    return;
-  }
+  const errU = validateUsername(username);
+  if (errU) { setMessage(errU); return; }
+  const errP = validatePassword(password);
+  if (errP) { setMessage(errP); return; }
   showLoading('Entrando...');
   try {
     const result = await apiPost({ action: 'loginUser', username, password });
@@ -514,35 +568,18 @@ document.getElementById('loginBtn').addEventListener('click', async () => {
     }
   } catch (err) {
     setMessage('Erro de conexão: ' + err.message);
-  } finally {
-    hideLoading();
-  }
+  } finally { hideLoading(); }
 });
 
 document.getElementById('registerBtn').addEventListener('click', async () => {
   const username = document.getElementById('newUsername').value.trim();
   const password = document.getElementById('newPassword').value;
   const confirmPassword = document.getElementById('confirmPassword').value;
-  if (!username || !password || !confirmPassword) {
-    setMessage('Por favor, preencha todos os campos');
-    return;
-  }
-  if (username.length > 20) {
-    setMessage('Nome de usuário deve ter no máximo 20 caracteres');
-    return;
-  }
-  if (password.length < 6) {
-    setMessage('A senha deve ter no mínimo 6 caracteres');
-    return;
-  }
-  if (password.length > 20) {
-    setMessage('A senha deve ter no máximo 20 caracteres');
-    return;
-  }
-  if (password !== confirmPassword) {
-    setMessage('As senhas não coincidem');
-    return;
-  }
+  const errU = validateUsername(username);
+  if (errU) { setMessage(errU); return; }
+  const errP = validatePassword(password);
+  if (errP) { setMessage(errP); return; }
+  if (password !== confirmPassword) { setMessage('As senhas não coincidem'); return; }
   showLoading('Registrando...');
   try {
     const result = await apiPost({ action: 'registerUser', username, password });
@@ -550,83 +587,59 @@ document.getElementById('registerBtn').addEventListener('click', async () => {
     if (result.success) showLoginForm();
   } catch (err) {
     setMessage('Erro de conexão: ' + err.message);
-  } finally {
-    hideLoading();
-  }
+  } finally { hideLoading(); }
 });
 
 document.getElementById('resetBtn').addEventListener('click', async () => {
   const username = document.getElementById('resetUsername').value.trim();
   const newPassword = document.getElementById('resetNewPassword').value;
   const confirmPassword = document.getElementById('resetConfirmPassword').value;
-  if (!username || !newPassword || !confirmPassword) {
-    setMessage('Por favor, preencha todos os campos');
-    return;
-  }
-  if (newPassword.length < 6) {
-    setMessage('A nova senha deve ter no mínimo 6 caracteres');
-    return;
-  }
-  if (newPassword.length > 20) {
-    setMessage('A nova senha deve ter no máximo 20 caracteres');
-    return;
-  }
-  if (newPassword !== confirmPassword) {
-    setMessage('As senhas não coincidem');
-    return;
-  }
+  const errU = validateUsername(username);
+  if (errU) { setMessage(errU); return; }
+  const errP = validatePassword(newPassword);
+  if (errP) { setMessage(errP); return; }
+  if (newPassword !== confirmPassword) { setMessage('As senhas não coincidem'); return; }
   showLoading('Redefinindo senha...');
   try {
     const result = await apiPost({ action: 'resetPassword', username, newPassword });
     setMessage(result.message, result.success);
-    if (result.success) {
-      setTimeout(() => showLoginForm(), 1500);
-    }
+    if (result.success) setTimeout(() => showLoginForm(), 1500);
   } catch (err) {
     setMessage('Erro de conexão: ' + err.message);
-  } finally {
-    hideLoading();
-  }
+  } finally { hideLoading(); }
 });
 
 // Enter nos campos
 ['username','password'].forEach(id => {
-  document.getElementById(id).addEventListener('keypress', e => {
-    if (e.key === 'Enter') document.getElementById('loginBtn').click();
-  });
+  document.getElementById(id).addEventListener('keypress', e => { if (e.key === 'Enter') document.getElementById('loginBtn').click(); });
 });
 ['newUsername','newPassword','confirmPassword'].forEach(id => {
-  document.getElementById(id).addEventListener('keypress', e => {
-    if (e.key === 'Enter') document.getElementById('registerBtn').click();
-  });
+  document.getElementById(id).addEventListener('keypress', e => { if (e.key === 'Enter') document.getElementById('registerBtn').click(); });
 });
 ['resetUsername','resetNewPassword','resetConfirmPassword'].forEach(id => {
-  document.getElementById(id).addEventListener('keypress', e => {
-    if (e.key === 'Enter') document.getElementById('resetBtn').click();
-  });
+  document.getElementById(id).addEventListener('keypress', e => { if (e.key === 'Enter') document.getElementById('resetBtn').click(); });
 });
 
 // ============================================================
 // MENU DO JOGO
 // ============================================================
 async function loadGameData() {
-  const userRankElem = document.getElementById('userRank');
   document.getElementById('userDisplay').textContent = 'Usuário: ' + currentUser;
-  if (userRankElem) userRankElem.textContent = 'Carregando rank...';
+  document.getElementById('userRank').textContent = 'Carregando rank...';
   await loadUserRank(currentUser);
 }
 
 async function loadUserRank(username) {
-  const userRankElem = document.getElementById('userRank');
+  const el = document.getElementById('userRank');
   try {
     const rankInfo = await apiFetch({ action: 'getUserRank', username });
     if (rankInfo && rankInfo.rank !== 'N/A') {
-      userRankElem.innerHTML = 'Posição no ranking: ' + rankInfo.rank + '<br>Pontuação: ' + rankInfo.score;
+      el.innerHTML = 'Posição no ranking: ' + rankInfo.rank + '<br>Pontuação: ' + rankInfo.score;
     } else {
-      userRankElem.innerHTML = 'Ainda sem pontuação';
+      el.innerHTML = 'Ainda sem pontuação';
     }
   } catch (err) {
-    if (userRankElem) userRankElem.textContent = 'Erro ao carregar ranking';
+    el.textContent = 'Erro ao carregar ranking';
   }
 }
 
@@ -634,9 +647,7 @@ async function saveGameScore(score) {
   if (!currentUser) return;
   try {
     const result = await apiPost({ action: 'saveScore', score, username: currentUser });
-    if (result && result.success) {
-      loadUserRank(currentUser);
-    }
+    if (result && result.success) loadUserRank(currentUser);
   } catch (err) {
     console.error('Erro ao salvar pontuação:', err);
   }
@@ -644,20 +655,14 @@ async function saveGameScore(score) {
 
 document.getElementById('startGameBtn').addEventListener('click', () => {
   pacmanInitialized = false;
-  if (pacmanGameTimer !== null) {
-    window.clearInterval(pacmanGameTimer);
-    pacmanGameTimer = null;
-  }
+  if (pacmanGameTimer !== null) { window.clearInterval(pacmanGameTimer); pacmanGameTimer = null; }
   const pe = document.getElementById('pacman');
   if (pe) pe.innerHTML = '';
   showPage('gameArea');
 });
 
 document.getElementById('backBtn').addEventListener('click', () => {
-  if (pacmanGameTimer !== null) {
-    window.clearInterval(pacmanGameTimer);
-    pacmanGameTimer = null;
-  }
+  if (pacmanGameTimer !== null) { window.clearInterval(pacmanGameTimer); pacmanGameTimer = null; }
   showPage('gamePage');
 });
 
@@ -674,7 +679,7 @@ function handleLogout() {
 }
 
 // ============================================================
-// RANKING
+// RANKING — carrega ranking e posição do usuário juntos
 // ============================================================
 async function loadRankingData() {
   const rankingBody = document.getElementById('rankingBody');
@@ -684,7 +689,6 @@ async function loadRankingData() {
   userPosition.style.display = 'none';
 
   try {
-    // Busca ranking e posição do usuário simultaneamente — igual ao Revisão Daniel
     const [scoresData, rankInfo] = await Promise.all([
       apiFetch({ action: 'getTopScores' }),
       apiFetch({ action: 'getUserRank', username: currentUser })
@@ -696,27 +700,31 @@ async function loadRankingData() {
     if (!list || list.length === 0) {
       rankingBody.innerHTML = '<tr><td colspan="3" style="text-align:center;">Nenhuma pontuação registrada ainda</td></tr>';
     } else {
+      const medals = ['🥇','🥈','🥉'];
       list.forEach((score, index) => {
         const row = document.createElement('tr');
 
+        // Célula de posição: número + medalha lado a lado, sem sobreposição
         const positionCell = document.createElement('td');
-        positionCell.style.position = 'relative';
-        positionCell.style.textAlign = 'center';
-        positionCell.innerText = index + 1;
-
+        const posDiv = document.createElement('div');
+        posDiv.className = 'pos-cell';
+        const numSpan = document.createElement('span');
+        numSpan.className = 'pos-num';
+        numSpan.textContent = index + 1;
+        posDiv.appendChild(numSpan);
         if (index < 3) {
-          const medals = ['🥇','🥈','🥉'];
           const medalSpan = document.createElement('span');
-          medalSpan.innerText = medals[index];
-          medalSpan.style.cssText = 'position:absolute;left:35px;top:50%;transform:translateY(-50%)';
-          positionCell.appendChild(medalSpan);
+          medalSpan.className = 'pos-medal';
+          medalSpan.textContent = medals[index];
+          posDiv.appendChild(medalSpan);
         }
+        positionCell.appendChild(posDiv);
 
         const playerCell = document.createElement('td');
-        playerCell.innerText = score[0] || 'Desconhecido';
+        playerCell.textContent = score[0] || 'Desconhecido';
 
         const scoreCell = document.createElement('td');
-        scoreCell.innerText = score[1] || 0;
+        scoreCell.textContent = score[1] || 0;
 
         row.appendChild(positionCell);
         row.appendChild(playerCell);
@@ -731,7 +739,6 @@ async function loadRankingData() {
       });
     }
 
-    // Exibe posição do usuário junto com o ranking
     if (rankInfo && rankInfo.rank !== 'N/A') {
       userPosition.style.display = 'block';
       userRankInfoEl.textContent = rankInfo.rank + ' (Pontuação: ' + rankInfo.score + ')';
@@ -745,17 +752,16 @@ async function loadRankingData() {
 // ============================================================
 // CONSTANTES DO JOGO
 // ============================================================
-var NONE=4, UP=3, LEFT=2, DOWN=1, RIGHT=11,
-    WAITING=5, PAUSE=6, PLAYING=7, COUNTDOWN=8, EATEN_PAUSE=9, DYING=10,
+var NONE=4,UP=3,LEFT=2,DOWN=1,RIGHT=11,
+    WAITING=5,PAUSE=6,PLAYING=7,COUNTDOWN=8,EATEN_PAUSE=9,DYING=10,
     Pacman={};
 
-Pacman.FPS = 30;
+Pacman.FPS=30;
 
-/* Human readable keyCode index */
-var KEY = {'BACKSPACE':8,'TAB':9,'NUM_PAD_CLEAR':12,'ENTER':13,'SHIFT':16,'CTRL':17,'ALT':18,'PAUSE':19,'CAPS_LOCK':20,'ESCAPE':27,'SPACEBAR':32,'PAGE_UP':33,'PAGE_DOWN':34,'END':35,'HOME':36,'ARROW_LEFT':37,'ARROW_UP':38,'ARROW_RIGHT':39,'ARROW_DOWN':40,'PRINT_SCREEN':44,'INSERT':45,'DELETE':46,'SEMICOLON':59,'WINDOWS_LEFT':91,'WINDOWS_RIGHT':92,'SELECT':93,'NUM_PAD_ASTERISK':106,'NUM_PAD_PLUS_SIGN':107,'NUM_PAD_HYPHEN-MINUS':109,'NUM_PAD_FULL_STOP':110,'NUM_PAD_SOLIDUS':111,'NUM_LOCK':144,'SCROLL_LOCK':145,'EQUALS_SIGN':187,'COMMA':188,'HYPHEN-MINUS':189,'FULL_STOP':190,'SOLIDUS':191,'GRAVE_ACCENT':192,'LEFT_SQUARE_BRACKET':219,'REVERSE_SOLIDUS':220,'RIGHT_SQUARE_BRACKET':221,'APOSTROPHE':222};
+var KEY={'BACKSPACE':8,'TAB':9,'NUM_PAD_CLEAR':12,'ENTER':13,'SHIFT':16,'CTRL':17,'ALT':18,'PAUSE':19,'CAPS_LOCK':20,'ESCAPE':27,'SPACEBAR':32,'PAGE_UP':33,'PAGE_DOWN':34,'END':35,'HOME':36,'ARROW_LEFT':37,'ARROW_UP':38,'ARROW_RIGHT':39,'ARROW_DOWN':40,'PRINT_SCREEN':44,'INSERT':45,'DELETE':46,'SEMICOLON':59,'WINDOWS_LEFT':91,'WINDOWS_RIGHT':92,'SELECT':93,'NUM_PAD_ASTERISK':106,'NUM_PAD_PLUS_SIGN':107,'NUM_PAD_HYPHEN-MINUS':109,'NUM_PAD_FULL_STOP':110,'NUM_PAD_SOLIDUS':111,'NUM_LOCK':144,'SCROLL_LOCK':145,'EQUALS_SIGN':187,'COMMA':188,'HYPHEN-MINUS':189,'FULL_STOP':190,'SOLIDUS':191,'GRAVE_ACCENT':192,'LEFT_SQUARE_BRACKET':219,'REVERSE_SOLIDUS':220,'RIGHT_SQUARE_BRACKET':221,'APOSTROPHE':222};
 (function(){for(var i=48;i<=57;i++)KEY[''+(i-48)]=i;for(i=65;i<=90;i++)KEY[''+String.fromCharCode(i)]=i;for(i=96;i<=105;i++)KEY['NUM_PAD_'+(i-96)]=i;for(i=112;i<=123;i++)KEY['F'+(i-112+1)]=i;})();
 
-Pacman.WALL=0; Pacman.BISCUIT=1; Pacman.EMPTY=2; Pacman.BLOCK=3; Pacman.PILL=4;
+Pacman.WALL=0;Pacman.BISCUIT=1;Pacman.EMPTY=2;Pacman.BLOCK=3;Pacman.PILL=4;
 
 Pacman.MAP=[
   [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
@@ -887,6 +893,7 @@ Pacman.User=function(game,map){
   function newLevel(){resetPosition();eaten=0;}
   function resetPosition(){position={"x":90,"y":120};direction=LEFT;due=LEFT;}
   function reset(){initUser();resetPosition();}
+  function setDue(d){due=d;} // exposto para o swipe
   function keyDown(e){if(typeof keyMap[e.keyCode]!=="undefined"){due=keyMap[e.keyCode];e.preventDefault();e.stopPropagation();return false;}return true;}
   function getNewCoord(dir,current){return{"x":current.x+(dir===LEFT&&-2||dir===RIGHT&&2||0),"y":current.y+(dir===DOWN&&2||dir===UP&&-2||0)};}
   function onWholeSquare(x){return x%10===0;}
@@ -920,22 +927,19 @@ Pacman.User=function(game,map){
     return{"start":0,"end":2,"direction":false};
   }
   function drawDead(ctx,amount){
-    var size=map.blockSize,half=size/2;
-    if(amount>=1)return;
+    var size=map.blockSize,half=size/2;if(amount>=1)return;
     ctx.fillStyle="#FFFF00";ctx.beginPath();
     ctx.moveTo(((position.x/10)*size)+half,((position.y/10)*size)+half);
-    ctx.arc(((position.x/10)*size)+half,((position.y/10)*size)+half,half,0,Math.PI*2*amount,true);
-    ctx.fill();
+    ctx.arc(((position.x/10)*size)+half,((position.y/10)*size)+half,half,0,Math.PI*2*amount,true);ctx.fill();
   }
   function draw(ctx){
     var s=map.blockSize,angle=calcAngle(direction,position);
     ctx.fillStyle="#FFFF00";ctx.beginPath();
     ctx.moveTo(((position.x/10)*s)+s/2,((position.y/10)*s)+s/2);
-    ctx.arc(((position.x/10)*s)+s/2,((position.y/10)*s)+s/2,s/2,Math.PI*angle.start,Math.PI*angle.end,angle.direction);
-    ctx.fill();
+    ctx.arc(((position.x/10)*s)+s/2,((position.y/10)*s)+s/2,s/2,Math.PI*angle.start,Math.PI*angle.end,angle.direction);ctx.fill();
   }
   initUser();
-  return{"draw":draw,"drawDead":drawDead,"loseLife":loseLife,"getLives":getLives,"score":score,"addScore":addScore,"theScore":theScore,"keyDown":keyDown,"move":move,"newLevel":newLevel,"reset":reset,"resetPosition":resetPosition};
+  return{"draw":draw,"drawDead":drawDead,"loseLife":loseLife,"getLives":getLives,"score":score,"addScore":addScore,"theScore":theScore,"keyDown":keyDown,"setDue":setDue,"move":move,"newLevel":newLevel,"reset":reset,"resetPosition":resetPosition};
 };
 
 // ============================================================
@@ -947,8 +951,7 @@ Pacman.Map=function(size){
   function isWall(pos){return withinBounds(pos.y,pos.x)&&map[pos.y][pos.x]===Pacman.WALL;}
   function isFloorSpace(pos){if(!withinBounds(pos.y,pos.x))return false;var p=map[pos.y][pos.x];return p===Pacman.EMPTY||p===Pacman.BISCUIT||p===Pacman.PILL;}
   function drawWall(ctx){
-    var i,j,p,line;
-    ctx.strokeStyle="#0000FF";ctx.lineWidth=5;ctx.lineCap="round";
+    var i,j,p,line;ctx.strokeStyle="#0000FF";ctx.lineWidth=5;ctx.lineCap="round";
     for(i=0;i<Pacman.WALLS.length;i+=1){line=Pacman.WALLS[i];ctx.beginPath();
       for(j=0;j<line.length;j+=1){p=line[j];
         if(p.move)ctx.moveTo(p.move[0]*blockSize,p.move[1]*blockSize);
@@ -965,14 +968,12 @@ Pacman.Map=function(size){
     for(var i=0;i<height;i+=1){for(var j=0;j<width;j+=1){if(map[i][j]===Pacman.PILL){
       ctx.beginPath();ctx.fillStyle="#000";ctx.fillRect(j*blockSize,i*blockSize,blockSize,blockSize);
       ctx.fillStyle="#FFF";var pr=Math.abs(5-(pillSize/3));
-      ctx.arc((j*blockSize)+blockSize/2,(i*blockSize)+blockSize/2,pr,0,Math.PI*2,false);
-      ctx.fill();ctx.closePath();
+      ctx.arc((j*blockSize)+blockSize/2,(i*blockSize)+blockSize/2,pr,0,Math.PI*2,false);ctx.fill();ctx.closePath();
     }}}
   }
   function draw(ctx){
     var i,j,s=blockSize;ctx.fillStyle="#000";ctx.fillRect(0,0,width*s,height*s);
-    drawWall(ctx);
-    for(i=0;i<height;i+=1){for(j=0;j<width;j+=1)drawBlock(i,j,ctx);}
+    drawWall(ctx);for(i=0;i<height;i+=1){for(j=0;j<width;j+=1)drawBlock(i,j,ctx);}
   }
   function drawBlock(y,x,ctx){
     if(y<0||y>=height||x<0||x>=width)return;
@@ -988,7 +989,7 @@ Pacman.Map=function(size){
 };
 
 // ============================================================
-// PACMAN PRINCIPAL (IIFE)
+// PACMAN PRINCIPAL
 // ============================================================
 var PACMAN=(function(){
   var state=WAITING,audio=null,ghosts=[],ghostSpecs=["#00FFDE","#FF0000","#FFB8DE","#FFB847"],
@@ -997,11 +998,6 @@ var PACMAN=(function(){
 
   function getTick(){return tick;}
 
-  function drawScore(text,position){
-    ctx.fillStyle="#FFFFFF";ctx.font="12px BDCartoonShoutRegular";
-    ctx.fillText(text,(position["new"]["x"]/10)*map.blockSize,((position["new"]["y"]+5)/10)*map.blockSize);
-  }
-
   function dialog(text){
     ctx.fillStyle="#FFFF00";ctx.font="36px Calibri";
     var oldAlign=ctx.textAlign;ctx.textAlign="center";
@@ -1009,13 +1005,17 @@ var PACMAN=(function(){
     ctx.textAlign=oldAlign;
   }
 
+  function drawScore(text,position){
+    ctx.fillStyle="#FFFFFF";ctx.font="12px BDCartoonShoutRegular";
+    ctx.fillText(text,(position["new"]["x"]/10)*map.blockSize,((position["new"]["y"]+5)/10)*map.blockSize);
+  }
+
   function soundDisabled(){return true;}
 
   function startLevel(){
     user.resetPosition();
     for(var i=0;i<ghosts.length;i+=1)ghosts[i].reset();
-    ghostPos=[];userPos=null;
-    timerStart=tick;setState(COUNTDOWN);
+    ghostPos=[];userPos=null;timerStart=tick;setState(COUNTDOWN);
   }
 
   function startNewGame(){
@@ -1027,6 +1027,11 @@ var PACMAN=(function(){
     else if(e.keyCode===KEY.P){stored=state;setState(PAUSE);map.draw(ctx);dialog("Paused");}
     else if(state!==PAUSE){return user.keyDown(e);}
     return true;
+  }
+
+  // Exposto para o swipe
+  function setUserDue(dir){
+    if(user&&state===PLAYING)user.setDue(dir);
   }
 
   function loseLife(){
@@ -1052,8 +1057,7 @@ var PACMAN=(function(){
   function drawFooter(){
     var topLeft=(map.height*map.blockSize),footerHeight=120;
     ctx.fillStyle="#000000";ctx.fillRect(0,topLeft,(map.width*map.blockSize),footerHeight);
-    ctx.save();
-    ctx.font="24px Calibri";ctx.fillStyle="#FFFF00";ctx.textAlign="center";
+    ctx.save();ctx.font="24px Calibri";ctx.fillStyle="#FFFF00";ctx.textAlign="center";
     var centerX=(map.width*map.blockSize)/2;
     ctx.fillText("Score: "+user.theScore(),centerX,topLeft+30);
     ctx.fillText("Level: "+level,centerX,topLeft+60);
@@ -1062,8 +1066,7 @@ var PACMAN=(function(){
     for(var i=0;i<lives;i++){
       ctx.fillStyle="#FFFF00";ctx.beginPath();
       var px=startX+(i*30),py=topLeft+90;
-      ctx.arc(px,py,pacmanRadius,Math.PI*0.25,Math.PI*1.75,false);
-      ctx.lineTo(px,py);ctx.fill();
+      ctx.arc(px,py,pacmanRadius,Math.PI*0.25,Math.PI*1.75,false);ctx.lineTo(px,py);ctx.fill();
     }
   }
 
@@ -1071,11 +1074,9 @@ var PACMAN=(function(){
     var u,i,len,nScore;
     if(!ghostPos||ghostPos.length===0)ghostPos=[];else ghostPos.length=0;
     for(i=0,len=ghosts.length;i<len;i+=1)ghostPos.push(ghosts[i].move(ctx));
-    u=user.move(ctx);
-    map.draw(ctx);map.drawPills(ctx);
+    u=user.move(ctx);map.draw(ctx);map.drawPills(ctx);
     for(i=0,len=ghosts.length;i<len;i+=1)ghosts[i].draw(ctx);
-    user.draw(ctx);
-    userPos=u["new"];
+    user.draw(ctx);userPos=u["new"];
     for(i=0,len=ghosts.length;i<len;i+=1){
       if(collided(userPos,ghostPos[i]["new"])){
         if(ghosts[i].isVunerable()){ghosts[i].eat();eatenCount+=1;nScore=eatenCount*50;drawScore(nScore,ghostPos[i]);user.addScore(nScore);setState(EATEN_PAUSE);timerStart=tick;}
@@ -1111,10 +1112,8 @@ var PACMAN=(function(){
   function completedLevel(){
     var currentScore=user.theScore();
     saveGameScore(currentScore);
-    setState(WAITING);level+=1;
-    map.reset();user.newLevel();
-    ctx.clearRect(0,0,ctx.canvas.width,ctx.canvas.height);
-    map.draw(ctx);
+    setState(WAITING);level+=1;map.reset();user.newLevel();
+    ctx.clearRect(0,0,ctx.canvas.width,ctx.canvas.height);map.draw(ctx);
     setTimeout(function(){startLevel();},500);
   }
 
@@ -1142,8 +1141,50 @@ var PACMAN=(function(){
     setTimeout(function(){dialog("Pressione ENTER para começar");},500);
   }
 
-  return{"init":init,"getTick":getTick,"completedLevel":completedLevel,"eatenPill":eatenPill,"soundDisabled":soundDisabled,"startNewGame":startNewGame,"loseLife":loseLife,"setState":setState};
+  return{"init":init,"getTick":getTick,"completedLevel":completedLevel,"eatenPill":eatenPill,
+         "soundDisabled":soundDisabled,"startNewGame":startNewGame,"loseLife":loseLife,
+         "setState":setState,"setUserDue":setUserDue};
 }());
+
+// ============================================================
+// SWIPE — controle por toque para celular
+// ============================================================
+(function(){
+  var touchStartX=0,touchStartY=0;
+  var SWIPE_THRESHOLD=30; // pixels mínimos para contar como swipe
+
+  document.getElementById('gameArea').addEventListener('touchstart',function(e){
+    var t=e.touches[0];
+    touchStartX=t.clientX;
+    touchStartY=t.clientY;
+  },{passive:true});
+
+  document.getElementById('gameArea').addEventListener('touchend',function(e){
+    var t=e.changedTouches[0];
+    var dx=t.clientX-touchStartX;
+    var dy=t.clientY-touchStartY;
+    var absDx=Math.abs(dx);
+    var absDy=Math.abs(dy);
+
+    // Swipe curto demais — ignorar
+    if(Math.max(absDx,absDy)<SWIPE_THRESHOLD)return;
+
+    var dir;
+    if(absDx>absDy){
+      dir=dx>0?RIGHT:LEFT;
+    } else {
+      dir=dy>0?DOWN:UP;
+    }
+
+    PACMAN.setUserDue(dir);
+  },{passive:true});
+
+  // Esconder hint após 5 segundos de jogo
+  setTimeout(function(){
+    var hint=document.getElementById('swipeHint');
+    if(hint)hint.style.display='none';
+  },5000);
+})();
 
 // ============================================================
 // INICIALIZAÇÃO DO JOGO
@@ -1169,12 +1210,9 @@ function initPacman(){
 // ============================================================
 // INICIALIZAÇÃO DA PÁGINA
 // ============================================================
-window.onload = function() {
-  if (currentUser) {
-    showPage('gamePage');
-  } else {
-    showPage('loginPage');
-  }
+window.onload=function(){
+  if(currentUser){showPage('gamePage');}
+  else{showPage('loginPage');}
 };
 
 </script>
