@@ -14,7 +14,6 @@
       margin: 0; padding: 0;
       width: 100%; height: 100%;
       background-color: black;
-      /* sem overflow:hidden global — cada página cuida do seu */
     }
 
     #app-container {
@@ -39,17 +38,17 @@
       padding: 30px;
       width: min(90%, 450px);
       margin: 20px auto;
-      /* não mais position:absolute — flui normalmente no scroll */
     }
 
     .form-group { margin-bottom: 15px; }
     label { display: block; margin-bottom: 5px; font-weight: bold; }
-    input[type="text"], input[type="password"] {
+    input[type="text"], input[type="password"], select {
       width: 100%; padding: 10px;
       border: 1px solid #ddd;
       border-radius: 4px;
       box-sizing: border-box;
-      font-size: 16px; /* evita zoom automático no iOS */
+      font-size: 16px;
+      background-color: white;
     }
     .switch-form { text-align: center; margin-top: 20px; line-height: 2; }
     .switch-form a { color: #4285f4; text-decoration: none; }
@@ -57,7 +56,7 @@
     #message { color: red; margin-top: 10px; text-align: center; }
     #message.success { color: green; }
 
-    #loginBtn, #registerBtn, #resetBtn {
+    #loginBtn, #registerBtn, #resetBtn, #checkUserBtn {
       display: block;
       width: 100%;
       margin: 15px auto;
@@ -83,7 +82,7 @@
     }
 
     .user-info { width: 100%; margin-bottom: 10px; text-align: center; }
-    .username, #userRank {
+    .username {
       margin: 5px 0;
       font-weight: bold;
       color: white;
@@ -155,7 +154,7 @@
       background-color: black;
       z-index: 1000;
       overflow: hidden;
-      touch-action: none; /* impede scroll durante swipe */
+      touch-action: none;
     }
 
     #pacman {
@@ -192,7 +191,6 @@
     }
     .back-btn:hover { background-color: #ff0000; }
 
-    /* Indicador de swipe no mobile */
     #swipeHint {
       position: fixed;
       bottom: 16px;
@@ -235,7 +233,6 @@
       padding: 16px;
     }
 
-    /* Tabela responsiva: scroll horizontal se necessário */
     .ranking-table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
 
     .ranking-table { width: 100%; border-collapse: collapse; font-size: clamp(15px, 3.5vw, 21px); }
@@ -247,7 +244,6 @@
     }
     .ranking-table th { background-color: #f8f8f8; font-weight: bold; }
 
-    /* Coluna de posição: número à esquerda, medalha à direita — sem sobreposição */
     .pos-cell {
       display: flex;
       align-items: center;
@@ -295,6 +291,7 @@
       animation: spin 0.8s linear infinite;
     }
     @keyframes spin { to { transform: rotate(360deg); } }
+
     /* Prevenir seleção de texto no jogo */
     #gameArea, #gameArea * {
       user-select: none;
@@ -352,6 +349,21 @@
           <label for="confirmPassword">Confirmar Senha:</label>
           <input type="password" id="confirmPassword" name="confirmPassword" maxlength="20" autocomplete="new-password" required>
         </div>
+        <div class="form-group">
+          <label for="secretQuestion">Pergunta Secreta:</label>
+          <select id="secretQuestion" name="secretQuestion" required>
+            <option value="">Selecione uma pergunta...</option>
+            <option value="Qual o nome do seu primeiro animal de estimação?">Qual o nome do seu primeiro animal de estimação?</option>
+            <option value="Qual o nome da sua mãe?">Qual o nome da sua mãe?</option>
+            <option value="Em que cidade você nasceu?">Em que cidade você nasceu?</option>
+            <option value="Qual o nome da sua escola primária?">Qual o nome da sua escola primária?</option>
+            <option value="Qual sua comida favorita?">Qual sua comida favorita?</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="secretAnswer">Resposta Secreta:</label>
+          <input type="text" id="secretAnswer" name="secretAnswer" maxlength="50" required>
+        </div>
         <button class="btn" id="registerBtn">Registrar</button>
         <div class="switch-form">
           <a href="#" id="showLogin">Já tem uma conta? Faça login</a>
@@ -363,15 +375,28 @@
           <label for="resetUsername">Nome de Usuário:</label>
           <input type="text" id="resetUsername" name="resetUsername" maxlength="20" required>
         </div>
-        <div class="form-group">
-          <label for="resetNewPassword">Nova Senha: <small style="color:#888;">(6 a 20 caracteres)</small></label>
-          <input type="password" id="resetNewPassword" name="resetNewPassword" minlength="6" maxlength="20" required>
+        <button class="btn" id="checkUserBtn">Verificar Usuário</button>
+        
+        <div id="resetQuestionSection" style="display:none;">
+          <div class="form-group">
+            <label id="resetQuestionLabel">Pergunta Secreta:</label>
+            <p id="resetQuestionText" style="font-weight:bold;color:#333;"></p>
+          </div>
+          <div class="form-group">
+            <label for="resetSecretAnswer">Resposta Secreta:</label>
+            <input type="text" id="resetSecretAnswer" name="resetSecretAnswer" maxlength="50" required>
+          </div>
+          <div class="form-group">
+            <label for="resetNewPassword">Nova Senha: <small style="color:#888;">(6 a 20 caracteres)</small></label>
+            <input type="password" id="resetNewPassword" name="resetNewPassword" minlength="6" maxlength="20" required>
+          </div>
+          <div class="form-group">
+            <label for="resetConfirmPassword">Confirmar Nova Senha:</label>
+            <input type="password" id="resetConfirmPassword" name="resetConfirmPassword" maxlength="20" required>
+          </div>
+          <button class="btn btn-reset" id="resetBtn">Redefinir Senha</button>
         </div>
-        <div class="form-group">
-          <label for="resetConfirmPassword">Confirmar Nova Senha:</label>
-          <input type="password" id="resetConfirmPassword" name="resetConfirmPassword" maxlength="20" required>
-        </div>
-        <button class="btn btn-reset" id="resetBtn">Redefinir Senha</button>
+        
         <div class="switch-form">
           <a href="#" id="showLoginFromReset">Voltar ao login</a>
         </div>
@@ -429,7 +454,6 @@
       <div class="secondary-buttons" style="width:100%;">
         <button id="refreshRankingBtn" class="btn btn-secondary btn-ranking">Atualizar Ranking</button>
         <button id="backToGameBtn" class="btn btn-secondary" style="background-color:#4CAF50;">Voltar ao Menu</button>
-        <button id="rankingLogoutBtn" class="btn btn-secondary btn-logout">Sair</button>
       </div>
     </div>
   </div>
@@ -545,6 +569,8 @@ function showResetForm() {
   document.getElementById('loginForm').style.display = 'none';
   document.getElementById('registerForm').style.display = 'none';
   document.getElementById('resetForm').style.display = 'block';
+  document.getElementById('resetQuestionSection').style.display = 'none';
+  document.getElementById('checkUserBtn').style.display = 'block';
   setMessage('');
 }
 
@@ -594,14 +620,26 @@ document.getElementById('registerBtn').addEventListener('click', async () => {
   const username = document.getElementById('newUsername').value.trim();
   const password = document.getElementById('newPassword').value;
   const confirmPassword = document.getElementById('confirmPassword').value;
+  const secretQuestion = document.getElementById('secretQuestion').value;
+  const secretAnswer = document.getElementById('secretAnswer').value.trim();
+  
   const errU = validateUsername(username);
   if (errU) { setMessage(errU); return; }
   const errP = validatePassword(password);
   if (errP) { setMessage(errP); return; }
   if (password !== confirmPassword) { setMessage('As senhas não coincidem'); return; }
+  if (!secretQuestion) { setMessage('Selecione uma pergunta secreta'); return; }
+  if (!secretAnswer || secretAnswer.length < 3) { setMessage('A resposta secreta deve ter no mínimo 3 caracteres'); return; }
+  
   showLoading('Registrando...');
   try {
-    const result = await apiPost({ action: 'registerUser', username, password });
+    const result = await apiPost({ 
+      action: 'registerUser', 
+      username, 
+      password, 
+      secretQuestion,
+      secretAnswer 
+    });
     setMessage(result.message, result.success);
     if (result.success) showLoginForm();
   } catch (err) {
@@ -609,63 +647,101 @@ document.getElementById('registerBtn').addEventListener('click', async () => {
   } finally { hideLoading(); }
 });
 
-document.getElementById('resetBtn').addEventListener('click', async () => {
+document.getElementById('checkUserBtn').addEventListener('click', async () => {
   const username = document.getElementById('resetUsername').value.trim();
-  const newPassword = document.getElementById('resetNewPassword').value;
-  const confirmPassword = document.getElementById('resetConfirmPassword').value;
   const errU = validateUsername(username);
   if (errU) { setMessage(errU); return; }
-  const errP = validatePassword(newPassword);
-  if (errP) { setMessage(errP); return; }
-  if (newPassword !== confirmPassword) { setMessage('As senhas não coincidem'); return; }
-  showLoading('Redefinindo senha...');
+  
+  showLoading('Verificando usuário...');
   try {
-    const result = await apiPost({ action: 'resetPassword', username, newPassword });
-    setMessage(result.message, result.success);
-    if (result.success) setTimeout(() => showLoginForm(), 1500);
+    const result = await apiFetch({ action: 'getSecretQuestion', username });
+    if (result.success) {
+      document.getElementById('resetQuestionText').textContent = result.question;
+      document.getElementById('resetQuestionSection').style.display = 'block';
+      document.getElementById('checkUserBtn').style.display = 'none';
+      
+      // Event listeners para os campos que acabaram de aparecer
+      ['resetSecretAnswer','resetNewPassword','resetConfirmPassword'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+          el.addEventListener('keypress', e => { 
+            if (e.key === 'Enter') document.getElementById('resetBtn').click(); 
+          });
+        }
+      });
+      
+      setMessage('');
+    } else {
+      setMessage(result.message);
+    }
   } catch (err) {
     setMessage('Erro de conexão: ' + err.message);
   } finally { hideLoading(); }
 });
 
-// Enter nos campos
+document.getElementById('resetBtn').addEventListener('click', async () => {
+  const username = document.getElementById('resetUsername').value.trim();
+  const secretAnswer = document.getElementById('resetSecretAnswer').value.trim();
+  const newPassword = document.getElementById('resetNewPassword').value;
+  const confirmPassword = document.getElementById('resetConfirmPassword').value;
+  
+  const errU = validateUsername(username);
+  if (errU) { setMessage(errU); return; }
+  if (!secretAnswer || secretAnswer.length < 3) { setMessage('Digite a resposta secreta'); return; }
+  const errP = validatePassword(newPassword);
+  if (errP) { setMessage(errP); return; }
+  if (newPassword !== confirmPassword) { setMessage('As senhas não coincidem'); return; }
+  
+  showLoading('Redefinindo senha...');
+  try {
+    const result = await apiPost({ action: 'resetPassword', username, newPassword, secretAnswer });
+    setMessage(result.message, result.success);
+    if (result.success) {
+      setTimeout(() => {
+        document.getElementById('resetQuestionSection').style.display = 'none';
+        document.getElementById('checkUserBtn').style.display = 'block';
+        showLoginForm();
+      }, 1500);
+    }
+  } catch (err) {
+    setMessage('Erro de conexão: ' + err.message);
+  } finally { hideLoading(); }
+});
+
+// Enter nos campos de login
 ['username','password'].forEach(id => {
-  document.getElementById(id).addEventListener('keypress', e => { if (e.key === 'Enter') document.getElementById('loginBtn').click(); });
+  const el = document.getElementById(id);
+  if (el) el.addEventListener('keypress', e => { if (e.key === 'Enter') document.getElementById('loginBtn').click(); });
 });
-['newUsername','newPassword','confirmPassword'].forEach(id => {
-  document.getElementById(id).addEventListener('keypress', e => { if (e.key === 'Enter') document.getElementById('registerBtn').click(); });
+
+// Enter nos campos de registro
+['newUsername','newPassword','confirmPassword','secretQuestion','secretAnswer'].forEach(id => {
+  const el = document.getElementById(id);
+  if (el) el.addEventListener('keypress', e => { if (e.key === 'Enter') document.getElementById('registerBtn').click(); });
 });
-['resetUsername','resetNewPassword','resetConfirmPassword'].forEach(id => {
-  document.getElementById(id).addEventListener('keypress', e => { if (e.key === 'Enter') document.getElementById('resetBtn').click(); });
-});
+
+// Enter no campo de username do reset
+const resetUsernameEl = document.getElementById('resetUsername');
+if (resetUsernameEl) {
+  resetUsernameEl.addEventListener('keypress', e => { 
+    if (e.key === 'Enter') {
+      const checkBtn = document.getElementById('checkUserBtn');
+      if (checkBtn && checkBtn.style.display !== 'none') checkBtn.click();
+    }
+  });
+}
 
 // ============================================================
 // MENU DO JOGO
 // ============================================================
 async function loadGameData() {
   document.getElementById('userDisplay').textContent = 'Usuário: ' + currentUser;
-  document.getElementById('userRank').textContent = '';
-}
-
-async function loadUserRank(username) {
-  const el = document.getElementById('userRank');
-  try {
-    const rankInfo = await apiFetch({ action: 'getUserRank', username });
-    if (rankInfo && rankInfo.rank !== 'N/A') {
-      el.innerHTML = 'Posição no ranking: ' + rankInfo.rank + '<br>Pontuação: ' + rankInfo.score;
-    } else {
-      el.innerHTML = 'Ainda sem pontuação';
-    }
-  } catch (err) {
-    el.textContent = 'Erro ao carregar ranking';
-  }
 }
 
 async function saveGameScore(score) {
   if (!currentUser) return;
   try {
     const result = await apiPost({ action: 'saveScore', score, username: currentUser });
-    if (result && result.success) loadUserRank(currentUser);
   } catch (err) {
     console.error('Erro ao salvar pontuação:', err);
   }
@@ -687,7 +763,6 @@ document.getElementById('backBtn').addEventListener('click', () => {
 document.getElementById('newShowRankingBtn').addEventListener('click', () => debounceClick(() => showPage('rankingPage')));
 document.getElementById('newLogoutBtn').addEventListener('click', () => debounceClick(handleLogout));
 document.getElementById('backToGameBtn').addEventListener('click', () => debounceClick(() => showPage('gamePage')));
-document.getElementById('rankingLogoutBtn').addEventListener('click', () => debounceClick(handleLogout));
 document.getElementById('refreshRankingBtn').addEventListener('click', () => debounceClick(loadRankingData));
 
 function handleLogout() {
@@ -697,7 +772,7 @@ function handleLogout() {
 }
 
 // ============================================================
-// RANKING — carrega ranking e posição do usuário juntos
+// RANKING
 // ============================================================
 async function loadRankingData() {
   const rankingBody = document.getElementById('rankingBody');
@@ -722,7 +797,6 @@ async function loadRankingData() {
       list.forEach((score, index) => {
         const row = document.createElement('tr');
 
-        // Célula de posição: número + medalha lado a lado, sem sobreposição
         const positionCell = document.createElement('td');
         const posDiv = document.createElement('div');
         posDiv.className = 'pos-cell';
@@ -910,7 +984,7 @@ Pacman.User=function(game,map){
   function newLevel(){resetPosition();eaten=0;}
   function resetPosition(){position={"x":90,"y":120};direction=LEFT;due=LEFT;}
   function reset(){initUser();resetPosition();}
-  function setDue(d){due=d;} // exposto para o swipe
+  function setDue(d){due=d;}
   function keyDown(e){if(typeof keyMap[e.keyCode]!=="undefined"){due=keyMap[e.keyCode];e.preventDefault();e.stopPropagation();return false;}return true;}
   function getNewCoord(dir,current){return{"x":current.x+(dir===LEFT&&-2||dir===RIGHT&&2||0),"y":current.y+(dir===DOWN&&2||dir===UP&&-2||0)};}
   function onWholeSquare(x){return x%10===0;}
@@ -930,7 +1004,7 @@ Pacman.User=function(game,map){
     position=npos;nextWhole=next(position,direction);block=map.block(nextWhole);
     if((isMidSquare(position.y)||isMidSquare(position.x))&&block===Pacman.BISCUIT||block===Pacman.PILL){
       map.setBlock(nextWhole,Pacman.EMPTY);addScore((block===Pacman.BISCUIT)?10:50);eaten+=1;
-      if(eaten===5)game.completedLevel();
+      if(eaten===182)game.completedLevel();
       if(block===Pacman.PILL)game.eatenPill();
     }
     return{"new":position,"old":oldPosition};
@@ -970,11 +1044,11 @@ Pacman.Map=function(size){
   function drawWall(ctx){
     var i,j,p,line;
     
-    // Busca level do closure externo via variável global temporária
     var currentLevel = window.CURRENT_PACMAN_LEVEL || 1;
-    var colorIndex = (currentLevel - 1) % 13;
-    var colors = ['#0000FF', '#40E0D0', '#00FFFF', '#00FF80', '#00FF00', '#C8A2C8', 
-                  '#FFFF00', '#FF8000', '#FF0000', '#FF1493', '#FF00FF', '#9400D3', '#FFFFFF'];
+    var colorIndex = (currentLevel - 1) % 16;
+    var colors = ['#0000FF', '#0080FF', '#00FFFF', '#00FF80', '#00FF00', '#80FF00', 
+                  '#C0FF00', '#FFFF00', '#FFD700', '#FFA500', '#FF8000', '#FF0000', 
+                  '#FF0080', '#FF00FF', '#8000FF', '#4000FF'];
     ctx.strokeStyle = colors[colorIndex];
     
     ctx.lineWidth=5;ctx.lineCap="round";
@@ -1021,6 +1095,7 @@ var PACMAN=(function(){
   var state=WAITING,audio=null,ghosts=[],ghostSpecs=["#00FFDE","#FF0000","#FFB8DE","#FFB847"],
       eatenCount=0,level=0,tick=0,ghostPos,userPos,stateChanged=true,
       timerStart=null,lastTime=0,ctx=null,timer=null,map=null,user=null,stored=null;
+  
   window.CURRENT_PACMAN_LEVEL = 1;
 
   function getTick(){return tick;}
@@ -1048,7 +1123,7 @@ var PACMAN=(function(){
 
   function startNewGame(){
     setState(WAITING);level=1;
-    window.CURRENT_PACMAN_LEVEL = 1;  // ADICIONE
+    window.CURRENT_PACMAN_LEVEL = 1;
     user.reset();map.reset();map.draw(ctx);startLevel();
   }
 
@@ -1059,7 +1134,6 @@ var PACMAN=(function(){
     return true;
   }
 
-  // Exposto para o swipe
   function setUserDue(dir){
     if(user&&state===PLAYING)user.setDue(dir);
   }
@@ -1142,8 +1216,9 @@ var PACMAN=(function(){
   function completedLevel(){
     var currentScore=user.theScore();
     saveGameScore(currentScore);
-    setState(WAITING);level+=1;
-    window.CURRENT_PACMAN_LEVEL = level;  // ADICIONE
+    setState(WAITING);
+    level+=1;
+    window.CURRENT_PACMAN_LEVEL = level;
     map.reset();user.newLevel();
     ctx.clearRect(0,0,ctx.canvas.width,ctx.canvas.height);map.draw(ctx);
     setTimeout(function(){startLevel();},500);
@@ -1161,7 +1236,7 @@ var PACMAN=(function(){
     ctx=canvas.getContext('2d');
     audio={disableSound:function(){},play:function(){},pause:function(){},resume:function(){},load:function(n,p,cb){if(typeof cb==="function")cb();}};
     map=new Pacman.Map(blockSize);
-    map.setLevel = function(lvl) { level = lvl; };
+    map.setLevel(1);
     user=new Pacman.User({"completedLevel":completedLevel,"eatenPill":eatenPill},map);
     ghosts=[];
     for(i=0,len=ghostSpecs.length;i<len;i+=1){ghost=new Pacman.Ghost({"getTick":getTick},map,ghostSpecs[i]);ghosts.push(ghost);}
@@ -1180,11 +1255,11 @@ var PACMAN=(function(){
 }());
 
 // ============================================================
-// SWIPE — controle por toque para celular
+// SWIPE
 // ============================================================
 (function(){
   var touchStartX=0,touchStartY=0;
-  var SWIPE_THRESHOLD=1; // pixels mínimos para contar como swipe
+  var SWIPE_THRESHOLD=1;
 
   document.getElementById('gameArea').addEventListener('touchstart',function(e){
     var t=e.touches[0];
@@ -1199,7 +1274,6 @@ var PACMAN=(function(){
     var absDx=Math.abs(dx);
     var absDy=Math.abs(dy);
 
-    // Swipe curto demais — ignorar
     if(Math.max(absDx,absDy)<SWIPE_THRESHOLD)return;
 
     var dir;
@@ -1212,7 +1286,6 @@ var PACMAN=(function(){
     PACMAN.setUserDue(dir);
   },{passive:true});
 
-  // Esconder hint após 5 segundos de jogo
   setTimeout(function(){
     var hint=document.getElementById('swipeHint');
     if(hint)hint.style.display='none';
