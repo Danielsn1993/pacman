@@ -1045,10 +1045,9 @@ Pacman.Map=function(size){
     var i,j,p,line;
     
     var currentLevel = window.CURRENT_PACMAN_LEVEL || 1;
-    var colorIndex = (currentLevel - 1) % 16;
-    var colors = ['#0000FF', '#0080FF', '#00FFFF', '#00FF80', '#00FF00', '#80FF00', 
-                  '#C0FF00', '#FFFF00', '#FFD700', '#FFA500', '#FF8000', '#FF0000', 
-                  '#FF0080', '#FF00FF', '#8000FF', '#4000FF'];
+    var colorIndex = (currentLevel - 1) % 13;
+    var colors = ['#0000FF', '#40E0D0', '#00FFFF', '#00FF80', '#00FF00', '#C8A2C8', 
+                  '#FFFF00', '#FF8000', '#FF0000', '#FF1493', '#FF00FF', '#9400D3', '#FFFFFF'];
     ctx.strokeStyle = colors[colorIndex];
     
     ctx.lineWidth=5;ctx.lineCap="round";
