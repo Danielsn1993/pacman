@@ -295,6 +295,18 @@
       animation: spin 0.8s linear infinite;
     }
     @keyframes spin { to { transform: rotate(360deg); } }
+    /* Prevenir seleção de texto no jogo */
+    #gameArea, #gameArea * {
+      user-select: none;
+      -webkit-user-select: none;
+      -webkit-touch-callout: none;
+      -moz-user-select: none;
+      -ms-user-select: none;
+    }
+
+    body {
+      -webkit-tap-highlight-color: transparent;
+    }
   </style>
 </head>
 <body>
@@ -439,6 +451,14 @@ const APP_URL = 'https://script.google.com/macros/s/AKfycbyNYuZGpQ8qtSaaKL-Lr3cd
 let currentUser = localStorage.getItem('pacman_user') || null;
 let pacmanGameTimer = null;
 let pacmanInitialized = false;
+
+let clickCooldown = false;
+function debounceClick(callback) {
+  if (clickCooldown) return;
+  clickCooldown = true;
+  callback();
+  setTimeout(() => clickCooldown = false, 300);
+}
 
 // ============================================================
 // FETCH HELPERS
@@ -664,11 +684,11 @@ document.getElementById('backBtn').addEventListener('click', () => {
   showPage('gamePage');
 });
 
-document.getElementById('newShowRankingBtn').addEventListener('click', () => showPage('rankingPage'));
-document.getElementById('newLogoutBtn').addEventListener('click', handleLogout);
-document.getElementById('backToGameBtn').addEventListener('click', () => showPage('gamePage'));
-document.getElementById('rankingLogoutBtn').addEventListener('click', handleLogout);
-document.getElementById('refreshRankingBtn').addEventListener('click', loadRankingData);
+document.getElementById('newShowRankingBtn').addEventListener('click', () => debounceClick(() => showPage('rankingPage')));
+document.getElementById('newLogoutBtn').addEventListener('click', () => debounceClick(handleLogout));
+document.getElementById('backToGameBtn').addEventListener('click', () => debounceClick(() => showPage('gamePage')));
+document.getElementById('rankingLogoutBtn').addEventListener('click', () => debounceClick(handleLogout));
+document.getElementById('refreshRankingBtn').addEventListener('click', () => debounceClick(loadRankingData));
 
 function handleLogout() {
   currentUser = null;
@@ -910,7 +930,7 @@ Pacman.User=function(game,map){
     position=npos;nextWhole=next(position,direction);block=map.block(nextWhole);
     if((isMidSquare(position.y)||isMidSquare(position.x))&&block===Pacman.BISCUIT||block===Pacman.PILL){
       map.setBlock(nextWhole,Pacman.EMPTY);addScore((block===Pacman.BISCUIT)?10:50);eaten+=1;
-      if(eaten===182)game.completedLevel();
+      if(eaten===5)game.completedLevel();
       if(block===Pacman.PILL)game.eatenPill();
     }
     return{"new":position,"old":oldPosition};
@@ -943,12 +963,21 @@ Pacman.User=function(game,map){
 // MAP
 // ============================================================
 Pacman.Map=function(size){
-  var height=null,width=null,blockSize=size,pillSize=0,map=null;
+  var height=null,width=null,blockSize=size,pillSize=0,map=null,level=1;
   function withinBounds(y,x){return y>=0&&y<height&&x>=0&&x<width;}
   function isWall(pos){return withinBounds(pos.y,pos.x)&&map[pos.y][pos.x]===Pacman.WALL;}
   function isFloorSpace(pos){if(!withinBounds(pos.y,pos.x))return false;var p=map[pos.y][pos.x];return p===Pacman.EMPTY||p===Pacman.BISCUIT||p===Pacman.PILL;}
   function drawWall(ctx){
-    var i,j,p,line;ctx.strokeStyle="#0000FF";ctx.lineWidth=5;ctx.lineCap="round";
+    var i,j,p,line;
+    
+    // Busca level do closure externo via variável global temporária
+    var currentLevel = window.CURRENT_PACMAN_LEVEL || 1;
+    var colorIndex = (currentLevel - 1) % 13;
+    var colors = ['#0000FF', '#40E0D0', '#00FFFF', '#00FF80', '#00FF00', '#C8A2C8', 
+                  '#FFFF00', '#FF8000', '#FF0000', '#FF1493', '#FF00FF', '#9400D3', '#FFFFFF'];
+    ctx.strokeStyle = colors[colorIndex];
+    
+    ctx.lineWidth=5;ctx.lineCap="round";
     for(i=0;i<Pacman.WALLS.length;i+=1){line=Pacman.WALLS[i];ctx.beginPath();
       for(j=0;j<line.length;j+=1){p=line[j];
         if(p.move)ctx.moveTo(p.move[0]*blockSize,p.move[1]*blockSize);
@@ -982,7 +1011,7 @@ Pacman.Map=function(size){
     }ctx.closePath();
   }
   reset();
-  return{"draw":draw,"drawBlock":drawBlock,"drawPills":drawPills,"block":block,"setBlock":setBlock,"reset":reset,"isWallSpace":isWall,"isFloorSpace":isFloorSpace,"height":height,"width":width,"blockSize":blockSize};
+  return{"draw":draw,"drawBlock":drawBlock,"drawPills":drawPills,"block":block,"setBlock":setBlock,"reset":reset,"isWallSpace":isWall,"isFloorSpace":isFloorSpace,"height":height,"width":width,"blockSize":blockSize,"setLevel":function(lvl){level=lvl;}};
 };
 
 // ============================================================
@@ -992,6 +1021,7 @@ var PACMAN=(function(){
   var state=WAITING,audio=null,ghosts=[],ghostSpecs=["#00FFDE","#FF0000","#FFB8DE","#FFB847"],
       eatenCount=0,level=0,tick=0,ghostPos,userPos,stateChanged=true,
       timerStart=null,lastTime=0,ctx=null,timer=null,map=null,user=null,stored=null;
+  window.CURRENT_PACMAN_LEVEL = 1;
 
   function getTick(){return tick;}
 
@@ -1012,11 +1042,14 @@ var PACMAN=(function(){
   function startLevel(){
     user.resetPosition();
     for(var i=0;i<ghosts.length;i+=1)ghosts[i].reset();
+    map.setLevel(level);
     ghostPos=[];userPos=null;timerStart=tick;setState(COUNTDOWN);
   }
 
   function startNewGame(){
-    setState(WAITING);level=1;user.reset();map.reset();map.draw(ctx);startLevel();
+    setState(WAITING);level=1;
+    window.CURRENT_PACMAN_LEVEL = 1;  // ADICIONE
+    user.reset();map.reset();map.draw(ctx);startLevel();
   }
 
   function keyDown(e){
@@ -1109,7 +1142,9 @@ var PACMAN=(function(){
   function completedLevel(){
     var currentScore=user.theScore();
     saveGameScore(currentScore);
-    setState(WAITING);level+=1;map.reset();user.newLevel();
+    setState(WAITING);level+=1;
+    window.CURRENT_PACMAN_LEVEL = level;  // ADICIONE
+    map.reset();user.newLevel();
     ctx.clearRect(0,0,ctx.canvas.width,ctx.canvas.height);map.draw(ctx);
     setTimeout(function(){startLevel();},500);
   }
@@ -1126,6 +1161,7 @@ var PACMAN=(function(){
     ctx=canvas.getContext('2d');
     audio={disableSound:function(){},play:function(){},pause:function(){},resume:function(){},load:function(n,p,cb){if(typeof cb==="function")cb();}};
     map=new Pacman.Map(blockSize);
+    map.setLevel = function(lvl) { level = lvl; };
     user=new Pacman.User({"completedLevel":completedLevel,"eatenPill":eatenPill},map);
     ghosts=[];
     for(i=0,len=ghostSpecs.length;i<len;i+=1){ghost=new Pacman.Ghost({"getTick":getTick},map,ghostSpecs[i]);ghosts.push(ghost);}
