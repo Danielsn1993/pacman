@@ -755,8 +755,9 @@ document.getElementById('startGameBtn').addEventListener('click', () => {
   showPage('gameArea');
 });
 
-document.getElementById('backBtn').addEventListener('click', () => {
+document.getElementById('backBtn').addEventListener('click', async () => {
   if (pacmanGameTimer !== null) { window.clearInterval(pacmanGameTimer); pacmanGameTimer = null; }
+  await saveGameScore(PACMAN.getScore());
   showPage('gamePage');
 });
 
@@ -1249,8 +1250,8 @@ var PACMAN=(function(){
   }
 
   return{"init":init,"getTick":getTick,"completedLevel":completedLevel,"eatenPill":eatenPill,
-         "soundDisabled":soundDisabled,"startNewGame":startNewGame,"loseLife":loseLife,
-         "setState":setState,"setUserDue":setUserDue};
+       "soundDisabled":soundDisabled,"startNewGame":startNewGame,"loseLife":loseLife,
+       "setState":setState,"setUserDue":setUserDue,"getScore":function(){return user?user.theScore():0;}};
 }());
 
 // ============================================================
