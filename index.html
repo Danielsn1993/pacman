@@ -1051,10 +1051,15 @@ Pacman.Map=function(size){
     var i,j,p,line;
     
     var currentLevel = window.CURRENT_PACMAN_LEVEL || 1;
-    var colorIndex = (currentLevel - 1) % 13;
-    var colors = ['#0000FF', '#40E0D0', '#00FFFF', '#00FF80', '#00FF00', '#C8A2C8', 
-                  '#FFFF00', '#FF8000', '#FF0000', '#FF1493', '#FF00FF', '#9400D3', '#FFFFFF'];
-    ctx.strokeStyle = colors[colorIndex];
+      if (currentLevel >= 14) {
+        var hue = ((window.PACMAN_TICK || 0) * 0.6) % 360;
+        ctx.strokeStyle = 'hsl(' + hue + ', 100%, 50%)';
+      } else {
+        var colorIndex = (currentLevel - 1) % 13;
+        var colors = ['#0000FF', '#40E0D0', '#00FFFF', '#00FF80', '#00FF00', '#C8A2C8', 
+                      '#FFFF00', '#FF8000', '#FF0000', '#FF1493', '#FF00FF', '#9400D3', '#FFFFFF'];
+        ctx.strokeStyle = colors[colorIndex];
+      }
     
     ctx.lineWidth=5;ctx.lineCap="round";
     for(i=0;i<Pacman.WALLS.length;i+=1){line=Pacman.WALLS[i];ctx.beginPath();
@@ -1200,6 +1205,7 @@ var PACMAN=(function(){
   function mainLoop(){
     var i,len;
     if(state!==PAUSE)++tick;
+    window.PACMAN_TICK = tick;
     if(state!==PLAYING&&state!==DYING)map.drawPills(ctx);
     if(state===PLAYING){mainDraw();}
     else if(state===WAITING&&stateChanged){stateChanged=false;map.draw(ctx);setTimeout(function(){setState(PLAYING);},5000);}
