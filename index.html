@@ -838,7 +838,7 @@ async function loadRankingData() {
 
     if (rankInfo && rankInfo.rank !== 'N/A') {
       userPosition.style.display = 'block';
-      userRankInfoEl.textContent = rankInfo.rank + 'º de ' + rankInfo.total + ' jogadores (Pontuação: ' + rankInfo.score + ')';
+      userRankInfoEl.innerHTML = rankInfo.rank + 'º de ' + rankInfo.total + ' jogadores<br>Pontuação: ' + rankInfo.score;
     }
 
   } catch (err) {
