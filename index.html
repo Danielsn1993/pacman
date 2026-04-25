@@ -1197,6 +1197,7 @@ var PACMAN=(function(){
         var pe=document.getElementById('pacman');if(pe)pe.innerHTML='';
         saveGameScore(finalScore).then(function(){
           hideLoading();
+          window.CURRENT_PACMAN_LEVEL = 1;
           showPage('gamePage');
         });
       },2000);
