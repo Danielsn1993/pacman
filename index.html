@@ -304,6 +304,17 @@
     body {
       -webkit-tap-highlight-color: transparent;
     }
+
+    .btn, .btn-large, .btn-secondary {
+      touch-action: manipulation;
+    }
+    @media (hover: none) {
+      .btn:hover, .btn-large:hover, .btn-secondary:hover,
+      .btn-ranking:hover, .btn-logout:hover, .btn-reset:hover {
+        background-color: initial;
+      }
+    }
+
   </style>
 </head>
 <body>
@@ -1102,7 +1113,7 @@ Pacman.Map=function(size){
 // PACMAN PRINCIPAL
 // ============================================================
 var PACMAN=(function(){
-  var state=WAITING,audio=null,ghosts=[],ghostSpecs=["#00FFDE","#FF0000","#FFB8DE","#FFB847"],
+  var canvas=null,state=WAITING,audio=null,ghosts=[],ghostSpecs=["#00FFDE","#FF0000","#FFB8DE","#FFB847"],
       eatenCount=0,level=0,tick=0,ghostPos,userPos,stateChanged=true,
       timerStart=null,lastTime=0,ctx=null,timer=null,map=null,user=null,stored=null;
   
@@ -1232,18 +1243,23 @@ var PACMAN=(function(){
     saveGameScore(currentScore);
     setState(WAITING);
     level+=1;
-    window.CURRENT_PACMAN_LEVEL = level;
+    window.CURRENT_PACMAN_LEVEL=level;
     map.reset();user.newLevel();
-    ctx.clearRect(0,0,ctx.canvas.width,ctx.canvas.height);map.draw(ctx);
-    setTimeout(function(){startLevel();},500);
+    if(canvas)canvas.style.visibility='hidden';
+    ctx.clearRect(0,0,ctx.canvas.width,ctx.canvas.height);
+    map.draw(ctx);
+    setTimeout(function(){
+      if(canvas)canvas.style.visibility='visible';
+      startLevel();
+    },500);
   }
 
   function keyPress(e){if(state!==WAITING&&state!==PAUSE){e.preventDefault();e.stopPropagation();}}
 
   function init(wrapper){
-    var i,len,ghost,
-        blockSize=wrapper.offsetWidth/19,
-        canvas=document.createElement("canvas");
+    var i,len,ghost;
+    blockSize=wrapper.offsetWidth/19;
+    canvas=document.createElement("canvas");
     canvas.setAttribute("width",(blockSize*19)+"px");
     canvas.setAttribute("height",(blockSize*22)+120+"px");
     wrapper.appendChild(canvas);
