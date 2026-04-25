@@ -768,6 +768,14 @@ document.getElementById('startGameBtn').addEventListener('click', () => {
   if (pe) pe.innerHTML = '';
   showPage('gameArea');
 });
+document.getElementById('startGameBtn').addEventListener('touchend', function(e){
+  e.preventDefault();
+  pacmanInitialized = false;
+  if (pacmanGameTimer !== null) { window.clearInterval(pacmanGameTimer); pacmanGameTimer = null; }
+  const pe = document.getElementById('pacman');
+  if (pe) pe.innerHTML = '';
+  showPage('gameArea');
+});
 
 document.getElementById('backBtn').addEventListener('click', async () => {
   showLoading('Salvando pontuação...');
@@ -776,11 +784,26 @@ document.getElementById('backBtn').addEventListener('click', async () => {
   hideLoading();
   showPage('gamePage');
 });
+document.getElementById('backBtn').addEventListener('touchend', async function(e){
+  e.preventDefault();
+  showLoading('Salvando pontuação...');
+  if (pacmanGameTimer !== null) { window.clearInterval(pacmanGameTimer); pacmanGameTimer = null; }
+  await saveGameScore(PACMAN.getScore());
+  hideLoading();
+  showPage('gamePage');
+});
 
-document.getElementById('newShowRankingBtn').addEventListener('click', () => debounceClick(() => showPage('rankingPage')));
-document.getElementById('newLogoutBtn').addEventListener('click', () => debounceClick(handleLogout));
-document.getElementById('backToGameBtn').addEventListener('click', () => debounceClick(() => showPage('gamePage')));
-document.getElementById('refreshRankingBtn').addEventListener('click', () => debounceClick(loadRankingData));
+document.getElementById('newShowRankingBtn').addEventListener('click', () => showPage('rankingPage'));
+document.getElementById('newShowRankingBtn').addEventListener('touchend', function(e){ e.preventDefault(); showPage('rankingPage'); });
+
+document.getElementById('newLogoutBtn').addEventListener('click', handleLogout);
+document.getElementById('newLogoutBtn').addEventListener('touchend', function(e){ e.preventDefault(); handleLogout(); });
+
+document.getElementById('backToGameBtn').addEventListener('click', () => showPage('gamePage'));
+document.getElementById('backToGameBtn').addEventListener('touchend', function(e){ e.preventDefault(); showPage('gamePage'); });
+
+document.getElementById('refreshRankingBtn').addEventListener('click', loadRankingData);
+document.getElementById('refreshRankingBtn').addEventListener('touchend', function(e){ e.preventDefault(); loadRankingData(); });
 
 function handleLogout() {
   currentUser = null;
