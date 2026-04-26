@@ -1266,7 +1266,11 @@ var PACMAN=(function(){
 
   function completedLevel(){
     var currentScore=user.theScore();
-    saveGameScore(currentScore);
+    saveGameScore(currentScore).then(function(result){
+      console.log('[PACMAN] Level ' + level + ' concluído. Score salvo: ' + currentScore + ' | Resposta:', result);
+    }).catch(function(err){
+      console.error('[PACMAN] Erro ao salvar score no level ' + level + ':', err);
+    });
     setState(WAITING);
     level+=1;
     window.CURRENT_PACMAN_LEVEL=level;
